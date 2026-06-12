@@ -9,12 +9,18 @@ class MemoryCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
 
 
+class MemoryUpdate(BaseModel):
+    content: str | None = Field(default=None, min_length=1, max_length=4000)
+    tags: list[str] | None = None
+
+
 class MemoryResponse(BaseModel):
     memory_id: str
     memory_type: MemoryType
     content: str
     tags: list[str]
     created_at: str
+    embedding_provider: str | None = None
 
 
 class MemoryListResponse(BaseModel):
