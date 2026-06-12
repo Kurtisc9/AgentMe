@@ -12,6 +12,7 @@ from app.api.providers import router as providers_router
 from app.api.tasks import router as tasks_router
 from app.api.telemetry import router as telemetry_router
 from app.api.voice import router as voice_router
+from app.api.voice_desktop import router as voice_desktop_router
 from app.config import get_settings
 from app.middleware.auth import ApiKeyAuthMiddleware
 from app.middleware.error_logging import StructuredExceptionMiddleware
@@ -31,6 +32,7 @@ app.include_router(audit_router)
 app.include_router(memory_router)
 app.include_router(providers_router)
 app.include_router(voice_router)
+app.include_router(voice_desktop_router)
 app.include_router(agents_router)
 app.include_router(models_router)
 app.include_router(automations_router)
