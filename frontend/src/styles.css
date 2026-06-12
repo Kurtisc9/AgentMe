@@ -404,7 +404,8 @@ h1 {
 .control-form input,
 .control-form select,
 .control-card input,
-.control-card select {
+.control-card select,
+.desktop-approval-bar input {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid rgba(93, 211, 255, 0.2);
@@ -472,7 +473,8 @@ button:disabled {
 }
 
 .control-card label,
-.control-card strong {
+.control-card strong,
+.desktop-approval-bar label {
   color: #8ee9ff;
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -481,6 +483,92 @@ button:disabled {
 
 .control-card span {
   color: #d8edf5;
+}
+
+.desktop-approval-bar {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border: 1px solid rgba(78, 207, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(4, 16, 28, 0.72);
+}
+
+.desktop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.desktop-command {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(77, 224, 255, 0.24);
+  border-radius: 16px;
+  color: #dffaff;
+  background: linear-gradient(180deg, rgba(8, 29, 48, 0.92), rgba(4, 14, 25, 0.95));
+  cursor: pointer;
+  text-align: center;
+  touch-action: manipulation;
+}
+
+.desktop-command:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(95, 232, 255, 0.55);
+  box-shadow: 0 12px 30px rgba(0, 173, 225, 0.15);
+}
+
+.desktop-command svg {
+  color: #6fe8ff;
+}
+
+.desktop-command strong {
+  font-size: 1rem;
+}
+
+.desktop-command span,
+.desktop-command small {
+  color: #8fa7b9;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.desktop-command.medium {
+  border-color: rgba(255, 190, 85, 0.3);
+}
+
+.desktop-command.medium svg,
+.desktop-command.medium small {
+  color: #ffd27f;
+}
+
+.desktop-command.high {
+  border-color: rgba(255, 85, 85, 0.3);
+}
+
+.desktop-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.desktop-result.success {
+  color: #baffd7;
+  border: 1px solid rgba(53, 245, 154, 0.24);
+  background: rgba(17, 84, 54, 0.24);
+}
+
+.desktop-result.failure {
+  color: #ffc4c4;
+  border: 1px solid rgba(255, 89, 89, 0.28);
+  background: rgba(120, 20, 28, 0.3);
 }
 
 .empty-state {
@@ -507,7 +595,8 @@ button:disabled {
     grid-template-columns: 190px minmax(0, 1fr);
   }
 
-  .agent-grid {
+  .agent-grid,
+  .desktop-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -550,7 +639,8 @@ button:disabled {
   }
 
   .agent-grid,
-  .control-form {
+  .control-form,
+  .desktop-grid {
     grid-template-columns: 1fr;
   }
 
@@ -562,8 +652,13 @@ button:disabled {
     min-height: 350px;
   }
 
-  .memory-card {
+  .memory-card,
+  .desktop-result {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .desktop-command {
+    min-height: 130px;
   }
 }
