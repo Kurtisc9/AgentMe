@@ -1,0 +1,334 @@
+.mission-dashboard-v1 {
+  display: grid;
+  gap: 18px;
+}
+
+.mission-hero {
+  min-height: 220px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: center;
+  gap: 24px;
+  padding: 28px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mission-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -80px -140px auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 221, 255, 0.18), transparent 65%);
+  pointer-events: none;
+}
+
+.mission-hero h2 {
+  margin-bottom: 12px;
+  font-size: clamp(1.9rem, 4vw, 4rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.mission-hero-text {
+  max-width: 760px;
+  margin-bottom: 0;
+  color: #98b4c5;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.mission-orb-wrap {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  color: #74e6ff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+}
+
+.mission-orb {
+  width: 150px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(115, 232, 255, 0.58);
+  background:
+    radial-gradient(circle, rgba(77, 229, 255, 0.3), rgba(5, 29, 49, 0.84) 58%, rgba(0, 0, 0, 0.42)),
+    repeating-radial-gradient(circle, transparent 0 12px, rgba(92, 225, 255, 0.08) 13px 14px);
+  box-shadow: 0 0 60px rgba(0, 204, 255, 0.26), inset 0 0 32px rgba(0, 218, 255, 0.2);
+  color: #dffaff;
+  font-weight: 950;
+  text-indent: 0.2em;
+}
+
+.mission-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mission-mini-metric {
+  min-height: 104px;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(72, 214, 255, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(8, 27, 45, 0.86), rgba(3, 13, 24, 0.92));
+}
+
+.mission-mini-metric svg {
+  color: #68dcff;
+}
+
+.mission-mini-metric span {
+  color: #7894a9;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mission-mini-metric strong {
+  color: #f1fcff;
+  font-size: 1.35rem;
+}
+
+.mission-grid-main,
+.mission-grid-secondary {
+  display: grid;
+  gap: 18px;
+}
+
+.mission-grid-main {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mission-grid-secondary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mission-panel {
+  min-height: 230px;
+  padding: 18px;
+}
+
+.mission-panel .panel-heading {
+  margin-bottom: 16px;
+}
+
+.mission-briefing-list,
+.provider-grid,
+.automation-summary,
+.quick-action-list {
+  display: grid;
+  gap: 10px;
+}
+
+.mission-briefing-list div,
+.provider-grid span,
+.automation-summary span,
+.quick-action-list span,
+.project-list article,
+.trading-snapshot-grid article {
+  padding: 10px 12px;
+  border: 1px solid rgba(80, 210, 255, 0.13);
+  border-radius: 12px;
+  background: rgba(2, 10, 18, 0.45);
+}
+
+.mission-briefing-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mission-briefing-list strong,
+.project-list strong,
+.trading-snapshot-grid strong {
+  color: #dffaff;
+}
+
+.mission-briefing-list span,
+.project-list span,
+.trading-snapshot-grid span {
+  color: #8da7b8;
+}
+
+.priority-stack,
+.alert-stack,
+.project-list {
+  display: grid;
+  gap: 12px;
+}
+
+.priority-item {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.priority-item span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #041018;
+  background: #68dcff;
+  font-weight: 950;
+}
+
+.priority-item p,
+.next-action-card p,
+.approval-summary p {
+  margin-bottom: 0;
+  color: #9bb3c3;
+  line-height: 1.45;
+}
+
+.next-action-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(53, 245, 154, 0.24);
+  background: rgba(17, 84, 54, 0.18);
+}
+
+.next-action-card strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #baffd7;
+}
+
+.alert-stack article {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: #b7d8e6;
+}
+
+.alert-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: #68dcff;
+  box-shadow: 0 0 12px rgba(104, 220, 255, 0.7);
+}
+
+.alert-dot.warning {
+  background: #ffd27f;
+  box-shadow: 0 0 12px rgba(255, 210, 127, 0.7);
+}
+
+.trading-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trading-snapshot-grid article {
+  min-height: 116px;
+  display: grid;
+  gap: 8px;
+}
+
+.trading-snapshot-grid svg {
+  color: #68dcff;
+}
+
+.project-list article {
+  display: grid;
+  gap: 6px;
+}
+
+.approval-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.approval-summary strong {
+  font-size: 3rem;
+  line-height: 1;
+  color: #68dcff;
+}
+
+.approval-summary span {
+  color: #dffaff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mission-activity-panel {
+  padding: 18px;
+}
+
+.mission-task-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mission-task-strip pre {
+  min-height: 160px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid rgba(80, 210, 255, 0.13);
+  border-radius: 12px;
+  color: #b7d8e6;
+  background: rgba(2, 10, 18, 0.78);
+  font-size: 0.72rem;
+}
+
+.compact-empty {
+  min-height: 120px;
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1280px) {
+  .mission-metric-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mission-grid-main,
+  .mission-grid-secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mission-task-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .mission-hero,
+  .mission-grid-main,
+  .mission-grid-secondary,
+  .trading-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mission-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mission-orb-wrap {
+    justify-self: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .mission-metric-grid,
+  .mission-task-strip {
+    grid-template-columns: 1fr;
+  }
+}
