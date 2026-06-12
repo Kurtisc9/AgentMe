@@ -73,6 +73,22 @@ export type ModelMetricsSummary = {
   average_latency_ms: number;
   providers: Record<string, { executions: number; successes: number }>;
 };
+export type DesktopProfile = {
+  id: string;
+  name: string;
+  type: string;
+  risk_level: string;
+  command: string;
+  arguments: string[];
+};
+export type DesktopExecution = {
+  profile_id: string;
+  profile_name: string;
+  profile_type: string;
+  risk_level: string;
+  success: boolean;
+  output: string;
+};
 
 async function request<T>(
   path: string,
@@ -111,6 +127,12 @@ export const api = {
   systemTelemetry: () => request<SystemTelemetry>("/telemetry/system"),
   missionSummary: () => request<MissionSummary>("/telemetry/summary"),
   modelMetrics: () => request<ModelMetricsSummary>("/telemetry/models"),
+  desktopProfiles: () => request<{ profiles: DesktopProfile[] }>("/desktop/profiles"),
+  executeDesktopProfile: (profileId: string, approvalId?: string) =>
+    request<DesktopExecution>("/desktop/execute", {
+      method: "POST",
+      body: JSON.stringify({ profile_id: profileId, approval_id: approvalId || null }),
+    }),
   createTask: (description: string) =>
     request<TaskRecord>("/tasks/route", {
       method: "POST",
