@@ -1,0 +1,44 @@
+{
+  "profiles": [
+    {
+      "id": "obs",
+      "name": "OBS Studio",
+      "type": "application",
+      "risk_level": "LOW",
+      "command": "obs64.exe",
+      "arguments": []
+    },
+    {
+      "id": "wallpaper_engine",
+      "name": "Wallpaper Engine",
+      "type": "application",
+      "risk_level": "LOW",
+      "command": "wallpaper64.exe",
+      "arguments": []
+    },
+    {
+      "id": "agentme_repo",
+      "name": "AgentMe Repository",
+      "type": "folder",
+      "risk_level": "LOW",
+      "command": ".",
+      "arguments": []
+    },
+    {
+      "id": "display_settings",
+      "name": "Windows Display Settings",
+      "type": "uri",
+      "risk_level": "LOW",
+      "command": "ms-settings:display",
+      "arguments": []
+    },
+    {
+      "id": "restart_obs",
+      "name": "Restart OBS",
+      "type": "powershell",
+      "risk_level": "MEDIUM",
+      "command": "Get-Process obs64 -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process obs64.exe",
+      "arguments": []
+    }
+  ]
+}
