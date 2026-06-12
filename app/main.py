@@ -9,6 +9,7 @@ from app.api.memory import router as memory_router
 from app.api.models import router as models_router
 from app.api.providers import router as providers_router
 from app.api.tasks import router as tasks_router
+from app.api.telemetry import router as telemetry_router
 from app.api.voice import router as voice_router
 from app.config import get_settings
 
@@ -24,6 +25,7 @@ app.include_router(voice_router)
 app.include_router(agents_router)
 app.include_router(models_router)
 app.include_router(automations_router)
+app.include_router(telemetry_router)
 
 
 @app.get("/")
