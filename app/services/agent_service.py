@@ -6,6 +6,18 @@ from app.models.memory_record import MemoryType
 from app.services.agent_registry import AgentRegistry
 from app.services.audit_service import AuditService
 from app.services.memory_service import MemoryService
+from app.services.model_execution import ModelExecutionService
+
+
+AGENT_TASK_TYPES = {
+    "CodeForge": "code",
+    "VisionForge": "general",
+    "PhotoForge": "general",
+    "MotionForge": "general",
+    "WordForge": "writing",
+    "FinanceForge": "analysis",
+    "MarketForge": "analysis",
+}
 
 
 class AgentService:
@@ -15,11 +27,13 @@ class AgentService:
         commander: SageCommander | None = None,
         memory: MemoryService | None = None,
         audit: AuditService | None = None,
+        model_execution: ModelExecutionService | None = None,
     ) -> None:
         self.registry = registry or AgentRegistry()
         self.commander = commander or SageCommander()
         self.memory = memory or MemoryService()
         self.audit = audit or AuditService()
+        self.model_execution = model_execution or ModelExecutionService()
 
     def list_agents(self) -> list[dict[str, object]]:
         return self.registry.list_agents()
@@ -43,7 +57,27 @@ class AgentService:
             )
         else:
             agent = self.registry.get(agent_name)
-            result = agent.execute(task)
+            task_type = AGENT_TASK_TYPES.get(agent_name, "general")
+            prompt = (
+                f"You are {agent.name}. {agent.description}\n"
+                f"Task: {task}\n"
+                "Return a precise, useful result without claiming actions you did not perform."
+            )
+            try:
+                model, output, fallback_used = self.model_execution.generate(
+                    task_type=task_type,
+                    prompt=prompt,
+                )
+                result = AgentResult(
+                    agent_name=agent_name,
+                    task=task,
+                    output=output,
+                    success=True,
+                )
+            except RuntimeError:
+                fallback_used = False
+                model = None
+                result = agent.execute(task)
 
         self.audit.log(
             "agent_execution",
@@ -54,6 +88,8 @@ class AgentService:
                 "approval_required": routed.approval_required,
                 "blocked": routed.blocked,
                 "success": result.success,
+                "model_name": model.name if "model" in locals() and model else None,
+                "fallback_used": fallback_used if "fallback_used" in locals() else False,
             },
         )
 
