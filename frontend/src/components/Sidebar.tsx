@@ -1,6 +1,7 @@
 import {
   Bot,
   Brain,
+  CandlestickChart,
   ClipboardList,
   FileText,
   Gauge,
@@ -12,6 +13,7 @@ import {
 
 export type HudPage =
   | "dashboard"
+  | "trading"
   | "inbox"
   | "approvals"
   | "agents"
@@ -22,7 +24,8 @@ export type HudPage =
   | "settings";
 
 const navItems: { id: HudPage; label: string; icon: typeof Gauge }[] = [
-  { id: "dashboard", label: "Dashboard", icon: Gauge },
+  { id: "dashboard", label: "Mission", icon: Gauge },
+  { id: "trading", label: "Trading", icon: CandlestickChart },
   { id: "inbox", label: "Inbox", icon: ClipboardList },
   { id: "approvals", label: "Approvals", icon: ShieldCheck },
   { id: "agents", label: "Agents", icon: Bot },
