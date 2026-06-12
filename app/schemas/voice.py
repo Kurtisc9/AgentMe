@@ -19,6 +19,11 @@ class VoiceCommandRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
 
 
+class VoiceDesktopCommandRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    approval_id: str | None = Field(default=None, min_length=1, max_length=200)
+
+
 class VoiceConfirmRequest(BaseModel):
     approval_id: str = Field(min_length=1)
     approve: bool
@@ -50,6 +55,11 @@ class VoiceCommandResponse(BaseModel):
     blocked: bool
     status: str
     reason: str
+
+
+class VoiceDesktopCommandResponse(BaseModel):
+    matched: bool
+    result: dict[str, object] | None = None
 
 
 class VoiceConfirmationResponse(BaseModel):
