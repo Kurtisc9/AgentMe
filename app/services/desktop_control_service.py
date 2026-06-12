@@ -6,6 +6,8 @@ from pathlib import Path
 from app.services.approval_service import ApprovalService
 from app.services.audit_service import AuditService
 from app.services.desktop_profile_service import DesktopProfile, DesktopProfileService
+from app.services.obs_service import OBSService
+from app.services.wallpaper_service import WallpaperEngineService
 
 
 class DesktopControlService:
@@ -15,13 +17,17 @@ class DesktopControlService:
         profiles: DesktopProfileService | None = None,
         approvals: ApprovalService | None = None,
         audit: AuditService | None = None,
+        obs: OBSService | None = None,
+        wallpaper: WallpaperEngineService | None = None,
     ) -> None:
         self.profiles = profiles or DesktopProfileService()
         self.approvals = approvals or ApprovalService()
         self.audit = audit or AuditService()
+        self.obs = obs or OBSService()
+        self.wallpaper = wallpaper or WallpaperEngineService()
 
-    def list_profiles(self) -> list[dict[str, object]]:
-        return [profile.to_dict() for profile in self.profiles.list_profiles()]
+    def list_profiles(self, *, device: str | None = None) -> list[dict[str, object]]:
+        return [profile.to_dict() for profile in self.profiles.list_profiles(device=device)]
 
     def execute(self, *, profile_id: str, approval_id: str | None = None) -> dict[str, object]:
         profile = self.profiles.get_profile(profile_id)
@@ -47,6 +53,7 @@ class DesktopControlService:
                 "profile_id": profile.id,
                 "profile_type": profile.type,
                 "risk_level": profile.risk_level,
+                "device": profile.device,
                 "approval_id": approval_id,
                 "success": result["success"],
             },
@@ -69,12 +76,46 @@ class DesktopControlService:
                     text=True,
                     timeout=30,
                 )
+            elif profile.type == "obs":
+                result = self._run_obs(profile)
+                return self._result(profile, result.success, result.output)
+            elif profile.type == "wallpaper":
+                result = self._run_wallpaper(profile)
+                return self._result(profile, result.success, result.output)
             else:
                 raise ValueError(f"Unsupported desktop profile type: {profile.type}")
         except (OSError, subprocess.SubprocessError, ValueError) as exc:
             return self._result(profile, False, str(exc))
 
         return self._result(profile, True, f"Executed {profile.name}.")
+
+    def _run_obs(self, profile: DesktopProfile):
+        action = profile.command
+        if action == "start_streaming":
+            return self.obs.start_streaming()
+        if action == "stop_streaming":
+            return self.obs.stop_streaming()
+        if action == "start_recording":
+            return self.obs.start_recording()
+        if action == "stop_recording":
+            return self.obs.stop_recording()
+        if action == "switch_scene":
+            scene = profile.arguments[0] if profile.arguments else ""
+            return self.obs.switch_scene(scene)
+        raise ValueError(f"Unsupported OBS command: {action}")
+
+    def _run_wallpaper(self, profile: DesktopProfile):
+        action = profile.command
+        if action == "play":
+            return self.wallpaper.play()
+        if action == "pause":
+            return self.wallpaper.pause()
+        if action == "stop":
+            return self.wallpaper.stop()
+        if action == "open_wallpaper":
+            wallpaper_path = profile.arguments[0] if profile.arguments else ""
+            return self.wallpaper.open_wallpaper(wallpaper_path)
+        raise ValueError(f"Unsupported Wallpaper Engine command: {action}")
 
     @staticmethod
     def _result(profile: DesktopProfile, success: bool, output: str) -> dict[str, object]:
