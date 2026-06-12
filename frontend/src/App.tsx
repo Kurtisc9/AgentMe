@@ -10,6 +10,7 @@ import {
   Gauge,
   MemoryStick,
   Mic2,
+  MonitorCog,
   Settings,
   ShieldCheck,
   Video,
@@ -20,6 +21,8 @@ import {
   api,
   type AgentSummary,
   type ApprovalRecord,
+  type DesktopExecution,
+  type DesktopProfile,
   type HealthStatus,
   type MemoryRecord,
   type MissionSummary,
@@ -89,6 +92,9 @@ export default function App() {
   const [systemTelemetry, setSystemTelemetry] = useState<SystemTelemetry | null>(null);
   const [missionSummary, setMissionSummary] = useState<MissionSummary | null>(null);
   const [modelMetrics, setModelMetrics] = useState<ModelMetricsSummary | null>(null);
+  const [desktopProfiles, setDesktopProfiles] = useState<DesktopProfile[]>([]);
+  const [desktopResult, setDesktopResult] = useState<DesktopExecution | null>(null);
+  const [desktopApprovalId, setDesktopApprovalId] = useState("");
   const [taskInput, setTaskInput] = useState("");
   const [memoryInput, setMemoryInput] = useState("");
   const [memoryType, setMemoryType] = useState("NOTE");
@@ -110,6 +116,7 @@ export default function App() {
       telemetryData,
       summaryData,
       modelMetricData,
+      desktopData,
     ] = await Promise.all([
       api.health(),
       api.providerHealth(),
@@ -123,6 +130,7 @@ export default function App() {
       api.systemTelemetry(),
       api.missionSummary(),
       api.modelMetrics(),
+      api.desktopProfiles(),
     ]);
 
     setHealth(healthData);
@@ -138,6 +146,7 @@ export default function App() {
     setSystemTelemetry(telemetryData);
     setMissionSummary(summaryData);
     setModelMetrics(modelMetricData);
+    setDesktopProfiles(desktopData.profiles);
   };
 
   useEffect(() => {
@@ -182,6 +191,16 @@ export default function App() {
     void runAction(async () => {
       await api.createMemory({ memory_type: memoryType, content, tags: [] });
       setMemoryInput("");
+    });
+  };
+
+  const executeDesktop = (profile: DesktopProfile) => {
+    void runAction(async () => {
+      const result = await api.executeDesktopProfile(
+        profile.id,
+        profile.risk_level === "MEDIUM" ? desktopApprovalId.trim() : undefined,
+      );
+      setDesktopResult(result);
     });
   };
 
@@ -381,6 +400,45 @@ export default function App() {
             </form>
           </div>
           <DataList items={voiceHistory} emptyText="No voice history yet." />
+        </PlaceholderPage>
+      );
+    }
+
+    if (activePage === "desktop") {
+      return (
+        <PlaceholderPage title="Desktop" description="Launch approved PC controls from the touchscreen command grid." icon={<MonitorCog size={20} />}>
+          <div className="desktop-approval-bar">
+            <label htmlFor="desktop-approval">Approval ID for MEDIUM controls</label>
+            <input
+              id="desktop-approval"
+              value={desktopApprovalId}
+              onChange={(event) => setDesktopApprovalId(event.target.value)}
+              placeholder="Paste approved record ID"
+              disabled={busy}
+            />
+          </div>
+          <div className="desktop-grid">
+            {desktopProfiles.map((profile) => (
+              <button
+                type="button"
+                className={`desktop-command ${profile.risk_level.toLowerCase()}`}
+                key={profile.id}
+                onClick={() => executeDesktop(profile)}
+                disabled={busy || (profile.risk_level === "MEDIUM" && !desktopApprovalId.trim())}
+              >
+                <MonitorCog size={28} />
+                <strong>{profile.name}</strong>
+                <span>{profile.type}</span>
+                <small>{profile.risk_level}</small>
+              </button>
+            ))}
+          </div>
+          {desktopResult && (
+            <div className={`desktop-result ${desktopResult.success ? "success" : "failure"}`}>
+              <strong>{desktopResult.profile_name}</strong>
+              <span>{desktopResult.output}</span>
+            </div>
+          )}
         </PlaceholderPage>
       );
     }
