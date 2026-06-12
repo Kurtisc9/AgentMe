@@ -12,6 +12,8 @@ from app.schemas.voice import (
     VoiceCommandResponse,
     VoiceConfirmRequest,
     VoiceConfirmationResponse,
+    VoiceDesktopCommandRequest,
+    VoiceDesktopCommandResponse,
     VoiceHistoryResponse,
     VoiceModeUpdate,
     VoiceStateResponse,
@@ -22,6 +24,7 @@ from app.services.approval_service import ApprovalService
 from app.services.speech_service import SpeechService
 from app.services.task_service import TaskService
 from app.services.transcription_service import TranscriptionService
+from app.services.voice_desktop_router import VoiceDesktopRouter
 from app.services.voice_history_service import VoiceHistoryService
 from app.services.voice_service import VoiceService
 from app.services.wake_phrase_service import WakePhraseService
@@ -34,6 +37,7 @@ speech_service = SpeechService("voices/en_US-lessac-medium.onnx")
 task_service = TaskService()
 approval_service = ApprovalService()
 history_service = VoiceHistoryService()
+desktop_router = VoiceDesktopRouter()
 
 
 @router.get("/state", response_model=VoiceStateResponse)
@@ -111,6 +115,16 @@ def route_voice_command(payload: VoiceCommandRequest) -> VoiceCommandResponse:
         status=record.status.value,
         reason=record.reason,
     )
+
+
+@router.post("/desktop-command", response_model=VoiceDesktopCommandResponse)
+def route_voice_desktop_command(payload: VoiceDesktopCommandRequest) -> VoiceDesktopCommandResponse:
+    result = desktop_router.route(payload.text, approval_id=payload.approval_id)
+    history_service.append(
+        event_type=VoiceEventType.COMMAND,
+        content=f"desktop:{payload.text}",
+    )
+    return VoiceDesktopCommandResponse(matched=result is not None, result=result)
 
 
 @router.post("/confirm", response_model=VoiceConfirmationResponse)
