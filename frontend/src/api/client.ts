@@ -37,6 +37,42 @@ export type VoiceState = {
   speaking: boolean;
   updated_at: string;
 };
+export type SystemTelemetry = {
+  timestamp: string;
+  hostname: string;
+  platform: string;
+  python_version: string;
+  cpu_count: number;
+  cpu_percent: number | null;
+  memory_total_bytes: number | null;
+  memory_available_bytes: number | null;
+  memory_percent: number | null;
+  disk_total_bytes: number;
+  disk_free_bytes: number;
+  disk_percent: number;
+  process_id: number;
+  gpu_name: string | null;
+  gpu_utilization_percent: number | null;
+  gpu_memory_used_mb: number | null;
+  gpu_memory_total_mb: number | null;
+};
+export type MissionSummary = {
+  tasks_total: number;
+  approvals_total: number;
+  approvals_pending: number;
+  memories_total: number;
+  voice_events_total: number;
+  audit_log_exists: boolean;
+  model_metrics_exists: boolean;
+};
+export type ModelMetricsSummary = {
+  executions_total: number;
+  success_total: number;
+  failure_total: number;
+  fallback_total: number;
+  average_latency_ms: number;
+  providers: Record<string, { executions: number; successes: number }>;
+};
 
 async function request<T>(
   path: string,
@@ -72,6 +108,9 @@ export const api = {
   voiceState: () => request<VoiceState>("/voice/state"),
   voiceHistory: () => request<{ events: Record<string, unknown>[] }>("/voice/history"),
   audit: () => request<{ events: Record<string, unknown>[] }>("/audit"),
+  systemTelemetry: () => request<SystemTelemetry>("/telemetry/system"),
+  missionSummary: () => request<MissionSummary>("/telemetry/summary"),
+  modelMetrics: () => request<ModelMetricsSummary>("/telemetry/models"),
   createTask: (description: string) =>
     request<TaskRecord>("/tasks/route", {
       method: "POST",
