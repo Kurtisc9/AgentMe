@@ -18,6 +18,11 @@ class MemoryRecord:
     content: str
     tags: list[str]
     created_at: str
+    project: str | None = None
+    importance: int = 3
+    access_count: int = 0
+    last_accessed_at: str | None = None
+    summary: str | None = None
 
     @classmethod
     def create(
@@ -26,6 +31,9 @@ class MemoryRecord:
         memory_type: MemoryType,
         content: str,
         tags: list[str] | None = None,
+        project: str | None = None,
+        importance: int = 3,
+        summary: str | None = None,
     ) -> "MemoryRecord":
         return cls(
             memory_id=str(uuid4()),
@@ -33,6 +41,9 @@ class MemoryRecord:
             content=content.strip(),
             tags=tags or [],
             created_at=datetime.now(UTC).isoformat(),
+            project=project,
+            importance=max(1, min(5, importance)),
+            summary=summary,
         )
 
     def to_dict(self) -> dict[str, object]:
