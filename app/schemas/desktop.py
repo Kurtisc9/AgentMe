@@ -1,13 +1,19 @@
 from pydantic import BaseModel, Field
 
 
-class DesktopProfileResponse(BaseModel):
-    id: str
-    name: str
-    type: str
-    risk_level: str
-    command: str
-    arguments: list[str]
+class DesktopProfilePayload(BaseModel):
+    id: str = Field(min_length=1, max_length=100)
+    name: str = Field(min_length=1, max_length=100)
+    type: str = Field(min_length=1, max_length=50)
+    risk_level: str = Field(pattern="^(LOW|MEDIUM|HIGH)$")
+    command: str = Field(min_length=1, max_length=2000)
+    arguments: list[str] = Field(default_factory=list)
+    device: str = Field(default="PC1", pattern="^(PC1|PC2)$")
+    favorite: bool = False
+
+
+class DesktopProfileResponse(DesktopProfilePayload):
+    pass
 
 
 class DesktopProfileListResponse(BaseModel):
