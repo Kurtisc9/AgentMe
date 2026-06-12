@@ -4,6 +4,7 @@ from app.api.agents import router as agents_router
 from app.api.approvals import router as approvals_router
 from app.api.audit import router as audit_router
 from app.api.automations import router as automations_router
+from app.api.desktop import router as desktop_router
 from app.api.health import router as health_router
 from app.api.memory import router as memory_router
 from app.api.models import router as models_router
@@ -34,6 +35,7 @@ app.include_router(agents_router)
 app.include_router(models_router)
 app.include_router(automations_router)
 app.include_router(telemetry_router)
+app.include_router(desktop_router)
 
 
 @app.get("/")
