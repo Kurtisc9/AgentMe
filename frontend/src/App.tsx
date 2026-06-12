@@ -4,11 +4,15 @@ import {
   Bot,
   Brain,
   ClipboardList,
+  Cpu,
   Database,
   FileText,
+  Gauge,
+  MemoryStick,
   Mic2,
   Settings,
   ShieldCheck,
+  Video,
   Wifi,
 } from "lucide-react";
 
@@ -18,7 +22,10 @@ import {
   type ApprovalRecord,
   type HealthStatus,
   type MemoryRecord,
+  type MissionSummary,
+  type ModelMetricsSummary,
   type ProviderHealth,
+  type SystemTelemetry,
   type TaskRecord,
   type VoiceState,
 } from "./api/client";
@@ -48,6 +55,26 @@ function DataList({ items, emptyText }: { items: unknown[]; emptyText: string })
   );
 }
 
+function MetricCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon: JSX.Element;
+}) {
+  return (
+    <div className="metric-card">
+      {icon}
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [activePage, setActivePage] = useState<HudPage>("dashboard");
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -59,6 +86,9 @@ export default function App() {
   const [voiceState, setVoiceState] = useState<VoiceState | null>(null);
   const [voiceHistory, setVoiceHistory] = useState<Record<string, unknown>[]>([]);
   const [auditEvents, setAuditEvents] = useState<Record<string, unknown>[]>([]);
+  const [systemTelemetry, setSystemTelemetry] = useState<SystemTelemetry | null>(null);
+  const [missionSummary, setMissionSummary] = useState<MissionSummary | null>(null);
+  const [modelMetrics, setModelMetrics] = useState<ModelMetricsSummary | null>(null);
   const [taskInput, setTaskInput] = useState("");
   const [memoryInput, setMemoryInput] = useState("");
   const [memoryType, setMemoryType] = useState("NOTE");
@@ -77,6 +107,9 @@ export default function App() {
       currentVoiceState,
       historyData,
       auditData,
+      telemetryData,
+      summaryData,
+      modelMetricData,
     ] = await Promise.all([
       api.health(),
       api.providerHealth(),
@@ -87,6 +120,9 @@ export default function App() {
       api.voiceState(),
       api.voiceHistory(),
       api.audit(),
+      api.systemTelemetry(),
+      api.missionSummary(),
+      api.modelMetrics(),
     ]);
 
     setHealth(healthData);
@@ -99,12 +135,21 @@ export default function App() {
     setWakePhrase(currentVoiceState.wake_phrase);
     setVoiceHistory(historyData.events);
     setAuditEvents(auditData.events);
+    setSystemTelemetry(telemetryData);
+    setMissionSummary(summaryData);
+    setModelMetrics(modelMetricData);
   };
 
   useEffect(() => {
-    refresh().catch((caught: unknown) => {
+    void refresh().catch((caught: unknown) => {
       setError(caught instanceof Error ? caught.message : "Unable to load Sage status.");
     });
+
+    const interval = window.setInterval(() => {
+      void refresh().catch(() => undefined);
+    }, 5000);
+
+    return () => window.clearInterval(interval);
   }, []);
 
   const runAction = async (action: () => Promise<unknown>) => {
@@ -157,27 +202,9 @@ export default function App() {
             </article>
 
             <article className="panel metrics-panel">
-              <div className="metric-card">
-                <ShieldCheck size={20} />
-                <div>
-                  <span>Pending approvals</span>
-                  <strong>{approvals.filter((item) => item.status === "PENDING").length}</strong>
-                </div>
-              </div>
-              <div className="metric-card">
-                <Database size={20} />
-                <div>
-                  <span>Tracked tasks</span>
-                  <strong>{tasks.length}</strong>
-                </div>
-              </div>
-              <div className="metric-card">
-                <Mic2 size={20} />
-                <div>
-                  <span>Voice mode</span>
-                  <strong>{voiceState?.mode ?? "UNKNOWN"}</strong>
-                </div>
-              </div>
+              <MetricCard label="CPU" value={`${systemTelemetry?.cpu_percent ?? 0}%`} icon={<Cpu size={20} />} />
+              <MetricCard label="RAM" value={`${systemTelemetry?.memory_percent ?? 0}%`} icon={<MemoryStick size={20} />} />
+              <MetricCard label="GPU" value={`${systemTelemetry?.gpu_utilization_percent ?? 0}%`} icon={<Video size={20} />} />
             </article>
           </section>
 
@@ -192,6 +219,29 @@ export default function App() {
               <StatusPill label="PostgreSQL" online={providers?.postgres ?? false} />
               <StatusPill label="Qdrant" online={providers?.qdrant ?? false} />
             </div>
+          </section>
+
+          <section className="telemetry-grid">
+            <article className="panel telemetry-card">
+              <Gauge size={20} />
+              <span>Disk usage</span>
+              <strong>{systemTelemetry?.disk_percent ?? 0}%</strong>
+            </article>
+            <article className="panel telemetry-card">
+              <ShieldCheck size={20} />
+              <span>Pending approvals</span>
+              <strong>{missionSummary?.approvals_pending ?? 0}</strong>
+            </article>
+            <article className="panel telemetry-card">
+              <Database size={20} />
+              <span>Memories</span>
+              <strong>{missionSummary?.memories_total ?? memories.length}</strong>
+            </article>
+            <article className="panel telemetry-card">
+              <Activity size={20} />
+              <span>Model runs</span>
+              <strong>{modelMetrics?.executions_total ?? 0}</strong>
+            </article>
           </section>
         </>
       );
@@ -338,6 +388,28 @@ export default function App() {
     if (activePage === "logs") {
       return (
         <PlaceholderPage title="Logs" description="Audit and execution events." icon={<FileText size={20} />}>
+          <div className="telemetry-grid compact">
+            <article className="panel telemetry-card">
+              <Activity size={20} />
+              <span>Successes</span>
+              <strong>{modelMetrics?.success_total ?? 0}</strong>
+            </article>
+            <article className="panel telemetry-card">
+              <Activity size={20} />
+              <span>Failures</span>
+              <strong>{modelMetrics?.failure_total ?? 0}</strong>
+            </article>
+            <article className="panel telemetry-card">
+              <Activity size={20} />
+              <span>Fallbacks</span>
+              <strong>{modelMetrics?.fallback_total ?? 0}</strong>
+            </article>
+            <article className="panel telemetry-card">
+              <Activity size={20} />
+              <span>Avg latency</span>
+              <strong>{modelMetrics?.average_latency_ms ?? 0} ms</strong>
+            </article>
+          </div>
           <DataList items={auditEvents} emptyText="No audit events yet." />
         </PlaceholderPage>
       );
@@ -349,6 +421,9 @@ export default function App() {
           <div className="control-card"><strong>Embedding provider</strong><span>{providers?.embedding_provider ?? "unknown"}</span></div>
           <div className="control-card"><strong>Safety owner</strong><span>KurtisC</span></div>
           <div className="control-card"><strong>API status</strong><span>{health?.status ?? "unknown"}</span></div>
+          <div className="control-card"><strong>Host</strong><span>{systemTelemetry?.hostname ?? "unknown"}</span></div>
+          <div className="control-card"><strong>GPU</strong><span>{systemTelemetry?.gpu_name ?? "not detected"}</span></div>
+          <div className="control-card"><strong>Refresh interval</strong><span>5 seconds</span></div>
         </div>
       </PlaceholderPage>
     );
