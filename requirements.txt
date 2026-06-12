@@ -5,6 +5,8 @@ python-dotenv
 httpx
 python-multipart
 faster-whisper
+sounddevice
+scipy
 pytest
 pytest-cov
 psycopg[binary]
