@@ -1,3 +1,5 @@
+import "./MissionDashboard.css";
+
 import type { ReactNode } from "react";
 import {
   Activity,
