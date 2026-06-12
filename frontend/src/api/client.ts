@@ -28,6 +28,8 @@ export type MemoryRecord = Record<string, unknown> & {
   memory_id?: string;
   memory_type?: string;
   content?: string;
+  summary?: string;
+  project?: string;
   tags?: string[];
 };
 export type VoiceState = {
@@ -80,6 +82,8 @@ export type DesktopProfile = {
   risk_level: string;
   command: string;
   arguments: string[];
+  device?: string;
+  favorite?: boolean;
 };
 export type DesktopExecution = {
   profile_id: string;
