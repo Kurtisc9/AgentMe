@@ -4,6 +4,7 @@ import {
   ClipboardList,
   FileText,
   Gauge,
+  MonitorCog,
   Mic2,
   Settings,
   ShieldCheck,
@@ -16,6 +17,7 @@ export type HudPage =
   | "agents"
   | "memory"
   | "voice"
+  | "desktop"
   | "logs"
   | "settings";
 
@@ -26,6 +28,7 @@ const navItems: { id: HudPage; label: string; icon: typeof Gauge }[] = [
   { id: "agents", label: "Agents", icon: Bot },
   { id: "memory", label: "Memory", icon: Brain },
   { id: "voice", label: "Voice", icon: Mic2 },
+  { id: "desktop", label: "Desktop", icon: MonitorCog },
   { id: "logs", label: "Logs", icon: FileText },
   { id: "settings", label: "Settings", icon: Settings },
 ];
