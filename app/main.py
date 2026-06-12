@@ -8,6 +8,7 @@ from app.api.desktop import router as desktop_router
 from app.api.health import router as health_router
 from app.api.memory import router as memory_router
 from app.api.models import router as models_router
+from app.api.orchestration import router as orchestration_router
 from app.api.providers import router as providers_router
 from app.api.tasks import router as tasks_router
 from app.api.telemetry import router as telemetry_router
@@ -38,6 +39,7 @@ app.include_router(models_router)
 app.include_router(automations_router)
 app.include_router(telemetry_router)
 app.include_router(desktop_router)
+app.include_router(orchestration_router)
 
 
 @app.get("/")
