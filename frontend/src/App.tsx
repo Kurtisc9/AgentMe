@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   Activity,
   Bot,
@@ -12,7 +12,16 @@ import {
   Wifi,
 } from "lucide-react";
 
-import { api, type AgentSummary, type HealthStatus, type ProviderHealth } from "./api/client";
+import {
+  api,
+  type AgentSummary,
+  type ApprovalRecord,
+  type HealthStatus,
+  type MemoryRecord,
+  type ProviderHealth,
+  type TaskRecord,
+  type VoiceState,
+} from "./api/client";
 import { Sidebar, type HudPage } from "./components/Sidebar";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 
@@ -44,29 +53,92 @@ export default function App() {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [providers, setProviders] = useState<ProviderHealth | null>(null);
   const [agents, setAgents] = useState<AgentSummary[]>([]);
-  const [tasks, setTasks] = useState<unknown[]>([]);
-  const [approvals, setApprovals] = useState<unknown[]>([]);
+  const [tasks, setTasks] = useState<TaskRecord[]>([]);
+  const [approvals, setApprovals] = useState<ApprovalRecord[]>([]);
+  const [memories, setMemories] = useState<MemoryRecord[]>([]);
+  const [voiceState, setVoiceState] = useState<VoiceState | null>(null);
+  const [voiceHistory, setVoiceHistory] = useState<Record<string, unknown>[]>([]);
+  const [auditEvents, setAuditEvents] = useState<Record<string, unknown>[]>([]);
+  const [taskInput, setTaskInput] = useState("");
+  const [memoryInput, setMemoryInput] = useState("");
+  const [memoryType, setMemoryType] = useState("NOTE");
+  const [wakePhrase, setWakePhrase] = useState("Sage");
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
+  const refresh = async () => {
+    const [
+      healthData,
+      providerData,
+      agentData,
+      taskData,
+      approvalData,
+      memoryData,
+      currentVoiceState,
+      historyData,
+      auditData,
+    ] = await Promise.all([
       api.health(),
       api.providerHealth(),
       api.agents(),
       api.tasks(),
       api.approvals(),
-    ])
-      .then(([healthData, providerData, agentData, taskData, approvalData]) => {
-        setHealth(healthData);
-        setProviders(providerData);
-        setAgents(agentData.agents);
-        setTasks(taskData.tasks);
-        setApprovals(approvalData.approvals);
-      })
-      .catch((caught: unknown) => {
-        setError(caught instanceof Error ? caught.message : "Unable to load Sage status.");
-      });
+      api.memories(),
+      api.voiceState(),
+      api.voiceHistory(),
+      api.audit(),
+    ]);
+
+    setHealth(healthData);
+    setProviders(providerData);
+    setAgents(agentData.agents);
+    setTasks(taskData.tasks);
+    setApprovals(approvalData.approvals);
+    setMemories(memoryData.memories);
+    setVoiceState(currentVoiceState);
+    setWakePhrase(currentVoiceState.wake_phrase);
+    setVoiceHistory(historyData.events);
+    setAuditEvents(auditData.events);
+  };
+
+  useEffect(() => {
+    refresh().catch((caught: unknown) => {
+      setError(caught instanceof Error ? caught.message : "Unable to load Sage status.");
+    });
   }, []);
+
+  const runAction = async (action: () => Promise<unknown>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await action();
+      await refresh();
+    } catch (caught: unknown) {
+      setError(caught instanceof Error ? caught.message : "Action failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitTask = (event: FormEvent) => {
+    event.preventDefault();
+    const description = taskInput.trim();
+    if (!description) return;
+    void runAction(async () => {
+      await api.createTask(description);
+      setTaskInput("");
+    });
+  };
+
+  const submitMemory = (event: FormEvent) => {
+    event.preventDefault();
+    const content = memoryInput.trim();
+    if (!content) return;
+    void runAction(async () => {
+      await api.createMemory({ memory_type: memoryType, content, tags: [] });
+      setMemoryInput("");
+    });
+  };
 
   const renderPage = () => {
     if (activePage === "dashboard") {
@@ -89,7 +161,7 @@ export default function App() {
                 <ShieldCheck size={20} />
                 <div>
                   <span>Pending approvals</span>
-                  <strong>{approvals.length}</strong>
+                  <strong>{approvals.filter((item) => item.status === "PENDING").length}</strong>
                 </div>
               </div>
               <div className="metric-card">
@@ -103,7 +175,7 @@ export default function App() {
                 <Mic2 size={20} />
                 <div>
                   <span>Voice mode</span>
-                  <strong>READY</strong>
+                  <strong>{voiceState?.mode ?? "UNKNOWN"}</strong>
                 </div>
               </div>
             </article>
@@ -127,7 +199,16 @@ export default function App() {
 
     if (activePage === "inbox") {
       return (
-        <PlaceholderPage title="Inbox" description="Routed tasks and blocked requests." icon={<ClipboardList size={20} />}>
+        <PlaceholderPage title="Inbox" description="Submit and inspect routed tasks." icon={<ClipboardList size={20} />}>
+          <form className="control-form" onSubmit={submitTask}>
+            <input
+              value={taskInput}
+              onChange={(event) => setTaskInput(event.target.value)}
+              placeholder="Enter a task for Sage"
+              disabled={busy}
+            />
+            <button type="submit" disabled={busy}>Route task</button>
+          </form>
           <DataList items={tasks} emptyText="No routed tasks yet." />
         </PlaceholderPage>
       );
@@ -136,7 +217,27 @@ export default function App() {
     if (activePage === "approvals") {
       return (
         <PlaceholderPage title="Approvals" description="MEDIUM-risk actions waiting for KurtisC." icon={<ShieldCheck size={20} />}>
-          <DataList items={approvals} emptyText="No pending approvals." />
+          {approvals.length === 0 ? (
+            <div className="empty-state">No approvals.</div>
+          ) : (
+            <div className="approval-list">
+              {approvals.map((approval, index) => {
+                const approvalId = String(approval.approval_id ?? "");
+                const pending = approval.status === "PENDING";
+                return (
+                  <article className="approval-card" key={approvalId || index}>
+                    <pre>{JSON.stringify(approval, null, 2)}</pre>
+                    {pending && approvalId && (
+                      <div className="action-row">
+                        <button onClick={() => void runAction(() => api.approve(approvalId))} disabled={busy}>Approve</button>
+                        <button className="danger" onClick={() => void runAction(() => api.deny(approvalId))} disabled={busy}>Deny</button>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </PlaceholderPage>
       );
     }
@@ -162,14 +263,95 @@ export default function App() {
       );
     }
 
-    const pageMap: Record<Exclude<HudPage, "dashboard" | "inbox" | "approvals" | "agents">, JSX.Element> = {
-      memory: <PlaceholderPage title="Memory" description="Structured and semantic memory controls." icon={<Brain size={20} />} />,
-      voice: <PlaceholderPage title="Voice" description="Voice state, wake phrase, history, and controls." icon={<Mic2 size={20} />} />,
-      logs: <PlaceholderPage title="Logs" description="Audit, model, and execution logs." icon={<FileText size={20} />} />,
-      settings: <PlaceholderPage title="Settings" description="Provider, model, voice, and safety configuration." icon={<Settings size={20} />} />,
-    };
+    if (activePage === "memory") {
+      return (
+        <PlaceholderPage title="Memory" description="Create and remove structured memories." icon={<Brain size={20} />}>
+          <form className="control-form" onSubmit={submitMemory}>
+            <select value={memoryType} onChange={(event) => setMemoryType(event.target.value)} disabled={busy}>
+              <option value="NOTE">Note</option>
+              <option value="PREFERENCE">Preference</option>
+              <option value="PROJECT">Project</option>
+              <option value="DECISION">Decision</option>
+            </select>
+            <input
+              value={memoryInput}
+              onChange={(event) => setMemoryInput(event.target.value)}
+              placeholder="Store a memory"
+              disabled={busy}
+            />
+            <button type="submit" disabled={busy}>Save memory</button>
+          </form>
+          <div className="memory-list">
+            {memories.length === 0 ? (
+              <div className="empty-state">No memories stored.</div>
+            ) : (
+              memories.map((memory, index) => {
+                const memoryId = String(memory.memory_id ?? "");
+                return (
+                  <article className="memory-card" key={memoryId || index}>
+                    <div>
+                      <strong>{String(memory.memory_type ?? "MEMORY")}</strong>
+                      <p>{String(memory.content ?? "")}</p>
+                    </div>
+                    {memoryId && (
+                      <button className="danger" onClick={() => void runAction(() => api.deleteMemory(memoryId))} disabled={busy}>Delete</button>
+                    )}
+                  </article>
+                );
+              })
+            )}
+          </div>
+        </PlaceholderPage>
+      );
+    }
 
-    return pageMap[activePage];
+    if (activePage === "voice") {
+      return (
+        <PlaceholderPage title="Voice" description="Voice state, wake phrase, and history." icon={<Mic2 size={20} />}>
+          <div className="voice-grid">
+            <div className="control-card">
+              <label>Voice mode</label>
+              <select
+                value={voiceState?.mode ?? "OFF"}
+                onChange={(event) => void runAction(() => api.setVoiceMode(event.target.value))}
+                disabled={busy}
+              >
+                <option value="OFF">Off</option>
+                <option value="PUSH_TO_TALK">Push to talk</option>
+                <option value="ALWAYS_LISTENING">Always listening</option>
+              </select>
+            </div>
+            <form className="control-card" onSubmit={(event) => {
+              event.preventDefault();
+              void runAction(() => api.setWakePhrase(wakePhrase));
+            }}>
+              <label>Wake phrase</label>
+              <input value={wakePhrase} onChange={(event) => setWakePhrase(event.target.value)} disabled={busy} />
+              <button type="submit" disabled={busy}>Update</button>
+            </form>
+          </div>
+          <DataList items={voiceHistory} emptyText="No voice history yet." />
+        </PlaceholderPage>
+      );
+    }
+
+    if (activePage === "logs") {
+      return (
+        <PlaceholderPage title="Logs" description="Audit and execution events." icon={<FileText size={20} />}>
+          <DataList items={auditEvents} emptyText="No audit events yet." />
+        </PlaceholderPage>
+      );
+    }
+
+    return (
+      <PlaceholderPage title="Settings" description="Provider, model, voice, and safety configuration." icon={<Settings size={20} />}>
+        <div className="settings-grid">
+          <div className="control-card"><strong>Embedding provider</strong><span>{providers?.embedding_provider ?? "unknown"}</span></div>
+          <div className="control-card"><strong>Safety owner</strong><span>KurtisC</span></div>
+          <div className="control-card"><strong>API status</strong><span>{health?.status ?? "unknown"}</span></div>
+        </div>
+      </PlaceholderPage>
+    );
   };
 
   return (
