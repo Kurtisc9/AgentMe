@@ -5,7 +5,7 @@ class AutomationExecuteRequest(BaseModel):
     integration_name: str = Field(min_length=1, max_length=100)
     action: str = Field(min_length=1, max_length=100)
     payload: dict[str, object] = Field(default_factory=dict)
-    approved: bool = False
+    approval_id: str | None = Field(default=None, min_length=1, max_length=200)
 
 
 class IntegrationSummary(BaseModel):
