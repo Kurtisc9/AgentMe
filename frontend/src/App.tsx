@@ -31,10 +31,7 @@ import { MissionDashboard } from "./pages/MissionDashboard";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 
 function DataList({ items, emptyText }: { items: unknown[]; emptyText: string }) {
-  if (items.length === 0) {
-    return <div className="empty-state">{emptyText}</div>;
-  }
-
+  if (items.length === 0) return <div className="empty-state">{emptyText}</div>;
   return (
     <div className="data-list">
       {items.slice(0, 20).map((item, index) => (
@@ -119,11 +116,7 @@ export default function App() {
     void refresh().catch((caught: unknown) => {
       setError(caught instanceof Error ? caught.message : "Unable to load Sage status.");
     });
-
-    const interval = window.setInterval(() => {
-      void refresh().catch(() => undefined);
-    }, 5000);
-
+    const interval = window.setInterval(() => void refresh().catch(() => undefined), 5000);
     return () => window.clearInterval(interval);
   }, []);
 
@@ -235,9 +228,7 @@ export default function App() {
                 <div className="agent-icon">{agent.name.slice(0, 2).toUpperCase()}</div>
                 <h3>{agent.name}</h3>
                 <p>{agent.description}</p>
-                <div className="tag-row">
-                  {agent.capabilities.map((capability) => <span key={capability}>{capability}</span>)}
-                </div>
+                <div className="tag-row">{agent.capabilities.map((capability) => <span key={capability}>{capability}</span>)}</div>
               </article>
             ))}
           </div>
@@ -263,7 +254,7 @@ export default function App() {
               const memoryId = String(memory.memory_id ?? "");
               return (
                 <article className="memory-card" key={memoryId || index}>
-                  <div><strong>{String(memory.memory_type ?? "MEMORY")}</strong><p>{String(memory.content ?? "")}</p></div>
+                  <div><strong>{String(memory.memory_type ?? "MEMORY")}</strong><p>{String(memory.summary ?? memory.content ?? "")}</p></div>
                   {memoryId && <button className="danger" onClick={() => void runAction(() => api.deleteMemory(memoryId))} disabled={busy}>Delete</button>}
                 </article>
               );
@@ -306,10 +297,7 @@ export default function App() {
           <div className="desktop-grid">
             {desktopProfiles.map((profile) => (
               <button type="button" className={`desktop-command ${profile.risk_level.toLowerCase()}`} key={profile.id} onClick={() => executeDesktop(profile)} disabled={busy || (profile.risk_level === "MEDIUM" && !desktopApprovalId.trim())}>
-                <MonitorCog size={28} />
-                <strong>{profile.name}</strong>
-                <span>{profile.type}</span>
-                <small>{profile.risk_level}</small>
+                <MonitorCog size={28} /><strong>{profile.name}</strong><span>{profile.type}</span><small>{profile.risk_level}</small>
               </button>
             ))}
           </div>
@@ -332,9 +320,7 @@ export default function App() {
           <div className="control-card"><strong>Embedding provider</strong><span>{providers?.embedding_provider ?? "unknown"}</span></div>
           <div className="control-card"><strong>Safety owner</strong><span>KurtisC</span></div>
           <div className="control-card"><strong>API status</strong><span>{health?.status ?? "unknown"}</span></div>
-          <div className="control-card"><strong>Host</strong><span>{systemTelemetry?.hostname ?? "unknown"}</span></div>
           <div className="control-card"><strong>GPU</strong><span>{systemTelemetry?.gpu_name ?? "not detected"}</span></div>
-          <div className="control-card"><strong>Refresh interval</strong><span>5 seconds</span></div>
         </div>
       </PlaceholderPage>
     );
@@ -349,10 +335,7 @@ export default function App() {
             <p className="eyebrow">AGENTME OPERATING SYSTEM</p>
             <h1>SAGE MISSION CONTROL</h1>
           </div>
-          <div className="system-state">
-            <Activity size={18} />
-            <span>{health?.status ?? "connecting"}</span>
-          </div>
+          <div className="system-state"><Activity size={18} /><span>{health?.status ?? "connecting"}</span></div>
         </header>
         {error && <div className="error-banner">{error}</div>}
         {renderPage()}
