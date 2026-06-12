@@ -1,0 +1,9 @@
+{
+  "machine": "PC2",
+  "profiles": [
+    {"id":"pc2_obs_monitor","name":"PC2 OBS Monitor","type":"application","risk_level":"LOW","command":"C:/Program Files/obs-studio/bin/64bit/obs64.exe","arguments":[]},
+    {"id":"pc2_touch_panel","name":"PC2 Touch Panel Browser","type":"uri","risk_level":"LOW","command":"http://127.0.0.1:8080","arguments":[]},
+    {"id":"pc2_sound_settings","name":"PC2 Sound Settings","type":"uri","risk_level":"LOW","command":"ms-settings:sound","arguments":[]},
+    {"id":"pc2_restart_touch_panel","name":"PC2 Restart Touch Panel","type":"powershell","risk_level":"MEDIUM","command":"Start-Process 'http://127.0.0.1:8080'","arguments":[]}
+  ]
+}
