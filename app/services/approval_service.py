@@ -32,6 +32,19 @@ class ApprovalService:
             self._rewrite(records)
         return records
 
+    def get_verified_approval(self, *, approval_id: str, task_description: str) -> dict[str, object]:
+        record = next(
+            (item for item in self.list_all() if item["approval_id"] == approval_id),
+            None,
+        )
+        if record is None:
+            raise KeyError("Approval not found.")
+        if record["status"] != ApprovalStatus.APPROVED:
+            raise PermissionError("Approval is not approved.")
+        if str(record["task_description"]).strip() != task_description.strip():
+            raise PermissionError("Approval does not match this automation request.")
+        return record
+
     def decide(
         self,
         *,
