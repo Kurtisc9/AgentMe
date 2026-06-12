@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -54,7 +55,7 @@ function MissionPanel({
 }: {
   title: string;
   icon: JSX.Element;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="mission-panel panel">
