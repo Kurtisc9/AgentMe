@@ -1,44 +1,124 @@
 {
   "profiles": [
     {
-      "id": "obs",
+      "id": "pc1_obs_launch",
       "name": "OBS Studio",
       "type": "application",
       "risk_level": "LOW",
       "command": "obs64.exe",
-      "arguments": []
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
     },
     {
-      "id": "wallpaper_engine",
+      "id": "pc1_obs_start_recording",
+      "name": "OBS Start Recording",
+      "type": "obs",
+      "risk_level": "LOW",
+      "command": "start_recording",
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
+    },
+    {
+      "id": "pc1_obs_stop_recording",
+      "name": "OBS Stop Recording",
+      "type": "obs",
+      "risk_level": "LOW",
+      "command": "stop_recording",
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
+    },
+    {
+      "id": "pc1_obs_stream_start",
+      "name": "OBS Start Streaming",
+      "type": "obs",
+      "risk_level": "MEDIUM",
+      "command": "start_streaming",
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
+    },
+    {
+      "id": "pc1_obs_stream_stop",
+      "name": "OBS Stop Streaming",
+      "type": "obs",
+      "risk_level": "MEDIUM",
+      "command": "stop_streaming",
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
+    },
+    {
+      "id": "pc1_wallpaper_launch",
       "name": "Wallpaper Engine",
       "type": "application",
       "risk_level": "LOW",
       "command": "wallpaper64.exe",
-      "arguments": []
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
     },
     {
-      "id": "agentme_repo",
+      "id": "pc1_wallpaper_pause",
+      "name": "Wallpaper Pause",
+      "type": "wallpaper",
+      "risk_level": "LOW",
+      "command": "pause",
+      "arguments": [],
+      "device": "PC1",
+      "favorite": false
+    },
+    {
+      "id": "pc1_wallpaper_play",
+      "name": "Wallpaper Play",
+      "type": "wallpaper",
+      "risk_level": "LOW",
+      "command": "play",
+      "arguments": [],
+      "device": "PC1",
+      "favorite": false
+    },
+    {
+      "id": "pc1_agentme_repo",
       "name": "AgentMe Repository",
       "type": "folder",
       "risk_level": "LOW",
       "command": ".",
-      "arguments": []
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
     },
     {
-      "id": "display_settings",
+      "id": "pc1_display_settings",
       "name": "Windows Display Settings",
       "type": "uri",
       "risk_level": "LOW",
       "command": "ms-settings:display",
-      "arguments": []
+      "arguments": [],
+      "device": "PC1",
+      "favorite": true
     },
     {
-      "id": "restart_obs",
+      "id": "pc1_restart_obs",
       "name": "Restart OBS",
       "type": "powershell",
       "risk_level": "MEDIUM",
       "command": "Get-Process obs64 -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process obs64.exe",
-      "arguments": []
+      "arguments": [],
+      "device": "PC1",
+      "favorite": false
+    },
+    {
+      "id": "pc2_stream_tools",
+      "name": "PC2 Stream Tools Folder",
+      "type": "folder",
+      "risk_level": "LOW",
+      "command": "C:/Sage-AI-Agent",
+      "arguments": [],
+      "device": "PC2",
+      "favorite": true
     }
   ]
 }
