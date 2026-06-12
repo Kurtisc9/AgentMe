@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from app.api.approvals import router as approvals_router
 from app.api.audit import router as audit_router
 from app.api.health import router as health_router
+from app.api.memory import router as memory_router
 from app.api.tasks import router as tasks_router
 from app.config import get_settings
 
@@ -12,6 +13,7 @@ app.include_router(health_router)
 app.include_router(tasks_router)
 app.include_router(approvals_router)
 app.include_router(audit_router)
+app.include_router(memory_router)
 
 
 @app.get("/")
