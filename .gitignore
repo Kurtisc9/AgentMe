@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs and runtime data
+logs/
+*.log
+Inbox/*.md
+!Inbox/.gitkeep
+
+# Databases / local storage
+*.db
+*.sqlite3
+qdrant_storage/
+postgres_data/
+
+# IDE / OS
+.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets and local config
+config/*.local.json
+*.pem
+*.key
