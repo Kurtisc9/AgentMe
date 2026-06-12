@@ -19,6 +19,13 @@ class VoiceCommandRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
 
 
+class VoiceConfirmRequest(BaseModel):
+    approval_id: str = Field(min_length=1)
+    approve: bool
+    confirmation_phrase: str = Field(min_length=1, max_length=200)
+    note: str | None = Field(default=None, max_length=1000)
+
+
 class VoiceStateResponse(BaseModel):
     mode: VoiceMode
     wake_phrase: str
@@ -43,6 +50,17 @@ class VoiceCommandResponse(BaseModel):
     blocked: bool
     status: str
     reason: str
+
+
+class VoiceConfirmationResponse(BaseModel):
+    approval_id: str
+    status: str
+    decision_note: str | None = None
+
+
+class WakePhraseResponse(BaseModel):
+    detected: bool
+    command: str | None = None
 
 
 class VoiceHistoryResponse(BaseModel):
