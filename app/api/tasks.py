@@ -2,7 +2,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.schemas.tasks import TaskCreate, TaskRouteResponse
+from app.schemas.tasks import TaskCreate, TaskListResponse, TaskRouteResponse
 from app.services.task_service import TaskService
 
 
@@ -21,3 +21,8 @@ def route_task(payload: TaskCreate) -> TaskRouteResponse:
         ) from exc
 
     return TaskRouteResponse(**asdict(result))
+
+
+@router.get("", response_model=TaskListResponse)
+def list_tasks() -> TaskListResponse:
+    return TaskListResponse(tasks=service.list_tasks())
