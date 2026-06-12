@@ -27,11 +27,15 @@ class MemoryManager:
         memory_type: MemoryType,
         content: str,
         tags: list[str] | None = None,
+        project: str | None = None,
+        importance: int = 3,
     ) -> tuple[MemoryRecord, str]:
         record = self.local_store.create(
             memory_type=memory_type,
             content=content,
             tags=tags,
+            project=project,
+            importance=importance,
         )
         vector, provider = self._embed_with_fallback(content)
 
