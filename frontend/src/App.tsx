@@ -4,17 +4,11 @@ import {
   Bot,
   Brain,
   ClipboardList,
-  Cpu,
-  Database,
   FileText,
-  Gauge,
-  MemoryStick,
   Mic2,
   MonitorCog,
   Settings,
   ShieldCheck,
-  Video,
-  Wifi,
 } from "lucide-react";
 
 import {
@@ -33,16 +27,8 @@ import {
   type VoiceState,
 } from "./api/client";
 import { Sidebar, type HudPage } from "./components/Sidebar";
+import { MissionDashboard } from "./pages/MissionDashboard";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
-
-function StatusPill({ label, online }: { label: string; online: boolean }) {
-  return (
-    <div className={`status-pill ${online ? "online" : "offline"}`}>
-      <span className="status-dot" />
-      <span>{label}</span>
-    </div>
-  );
-}
 
 function DataList({ items, emptyText }: { items: unknown[]; emptyText: string }) {
   if (items.length === 0) {
@@ -54,26 +40,6 @@ function DataList({ items, emptyText }: { items: unknown[]; emptyText: string })
       {items.slice(0, 20).map((item, index) => (
         <pre key={index}>{JSON.stringify(item, null, 2)}</pre>
       ))}
-    </div>
-  );
-}
-
-function MetricCard({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: JSX.Element;
-}) {
-  return (
-    <div className="metric-card">
-      {icon}
-      <div>
-        <span>{label}</span>
-        <strong>{value}</strong>
-      </div>
     </div>
   );
 }
@@ -207,62 +173,18 @@ export default function App() {
   const renderPage = () => {
     if (activePage === "dashboard") {
       return (
-        <>
-          <section className="hero-grid">
-            <article className="panel command-core">
-              <div className="panel-heading">
-                <Bot size={20} />
-                <h2>Command Core</h2>
-              </div>
-              <div className="core-orb" aria-label="Sage command core">
-                <div className="orb-inner">SAGE</div>
-              </div>
-              <p className="muted">Commander, agents, memory, voice, and approvals linked.</p>
-            </article>
-
-            <article className="panel metrics-panel">
-              <MetricCard label="CPU" value={`${systemTelemetry?.cpu_percent ?? 0}%`} icon={<Cpu size={20} />} />
-              <MetricCard label="RAM" value={`${systemTelemetry?.memory_percent ?? 0}%`} icon={<MemoryStick size={20} />} />
-              <MetricCard label="GPU" value={`${systemTelemetry?.gpu_utilization_percent ?? 0}%`} icon={<Video size={20} />} />
-            </article>
-          </section>
-
-          <section className="panel providers-panel">
-            <div className="panel-heading">
-              <Wifi size={20} />
-              <h2>Provider Status</h2>
-            </div>
-            <div className="status-row">
-              <StatusPill label="Ollama" online={providers?.ollama ?? false} />
-              <StatusPill label="LM Studio" online={providers?.lm_studio ?? false} />
-              <StatusPill label="PostgreSQL" online={providers?.postgres ?? false} />
-              <StatusPill label="Qdrant" online={providers?.qdrant ?? false} />
-            </div>
-          </section>
-
-          <section className="telemetry-grid">
-            <article className="panel telemetry-card">
-              <Gauge size={20} />
-              <span>Disk usage</span>
-              <strong>{systemTelemetry?.disk_percent ?? 0}%</strong>
-            </article>
-            <article className="panel telemetry-card">
-              <ShieldCheck size={20} />
-              <span>Pending approvals</span>
-              <strong>{missionSummary?.approvals_pending ?? 0}</strong>
-            </article>
-            <article className="panel telemetry-card">
-              <Database size={20} />
-              <span>Memories</span>
-              <strong>{missionSummary?.memories_total ?? memories.length}</strong>
-            </article>
-            <article className="panel telemetry-card">
-              <Activity size={20} />
-              <span>Model runs</span>
-              <strong>{modelMetrics?.executions_total ?? 0}</strong>
-            </article>
-          </section>
-        </>
+        <MissionDashboard
+          health={health}
+          providers={providers}
+          tasks={tasks}
+          approvals={approvals}
+          memories={memories}
+          missionSummary={missionSummary}
+          modelMetrics={modelMetrics}
+          systemTelemetry={systemTelemetry}
+          voiceState={voiceState}
+          desktopProfiles={desktopProfiles}
+        />
       );
     }
 
@@ -270,12 +192,7 @@ export default function App() {
       return (
         <PlaceholderPage title="Inbox" description="Submit and inspect routed tasks." icon={<ClipboardList size={20} />}>
           <form className="control-form" onSubmit={submitTask}>
-            <input
-              value={taskInput}
-              onChange={(event) => setTaskInput(event.target.value)}
-              placeholder="Enter a task for Sage"
-              disabled={busy}
-            />
+            <input value={taskInput} onChange={(event) => setTaskInput(event.target.value)} placeholder="Enter a task for Sage" disabled={busy} />
             <button type="submit" disabled={busy}>Route task</button>
           </form>
           <DataList items={tasks} emptyText="No routed tasks yet." />
@@ -286,9 +203,7 @@ export default function App() {
     if (activePage === "approvals") {
       return (
         <PlaceholderPage title="Approvals" description="MEDIUM-risk actions waiting for KurtisC." icon={<ShieldCheck size={20} />}>
-          {approvals.length === 0 ? (
-            <div className="empty-state">No approvals.</div>
-          ) : (
+          {approvals.length === 0 ? <div className="empty-state">No approvals.</div> : (
             <div className="approval-list">
               {approvals.map((approval, index) => {
                 const approvalId = String(approval.approval_id ?? "");
@@ -321,9 +236,7 @@ export default function App() {
                 <h3>{agent.name}</h3>
                 <p>{agent.description}</p>
                 <div className="tag-row">
-                  {agent.capabilities.map((capability) => (
-                    <span key={capability}>{capability}</span>
-                  ))}
+                  {agent.capabilities.map((capability) => <span key={capability}>{capability}</span>)}
                 </div>
               </article>
             ))}
@@ -342,33 +255,19 @@ export default function App() {
               <option value="PROJECT">Project</option>
               <option value="DECISION">Decision</option>
             </select>
-            <input
-              value={memoryInput}
-              onChange={(event) => setMemoryInput(event.target.value)}
-              placeholder="Store a memory"
-              disabled={busy}
-            />
+            <input value={memoryInput} onChange={(event) => setMemoryInput(event.target.value)} placeholder="Store a memory" disabled={busy} />
             <button type="submit" disabled={busy}>Save memory</button>
           </form>
           <div className="memory-list">
-            {memories.length === 0 ? (
-              <div className="empty-state">No memories stored.</div>
-            ) : (
-              memories.map((memory, index) => {
-                const memoryId = String(memory.memory_id ?? "");
-                return (
-                  <article className="memory-card" key={memoryId || index}>
-                    <div>
-                      <strong>{String(memory.memory_type ?? "MEMORY")}</strong>
-                      <p>{String(memory.content ?? "")}</p>
-                    </div>
-                    {memoryId && (
-                      <button className="danger" onClick={() => void runAction(() => api.deleteMemory(memoryId))} disabled={busy}>Delete</button>
-                    )}
-                  </article>
-                );
-              })
-            )}
+            {memories.length === 0 ? <div className="empty-state">No memories stored.</div> : memories.map((memory, index) => {
+              const memoryId = String(memory.memory_id ?? "");
+              return (
+                <article className="memory-card" key={memoryId || index}>
+                  <div><strong>{String(memory.memory_type ?? "MEMORY")}</strong><p>{String(memory.content ?? "")}</p></div>
+                  {memoryId && <button className="danger" onClick={() => void runAction(() => api.deleteMemory(memoryId))} disabled={busy}>Delete</button>}
+                </article>
+              );
+            })}
           </div>
         </PlaceholderPage>
       );
@@ -380,20 +279,13 @@ export default function App() {
           <div className="voice-grid">
             <div className="control-card">
               <label>Voice mode</label>
-              <select
-                value={voiceState?.mode ?? "OFF"}
-                onChange={(event) => void runAction(() => api.setVoiceMode(event.target.value))}
-                disabled={busy}
-              >
+              <select value={voiceState?.mode ?? "OFF"} onChange={(event) => void runAction(() => api.setVoiceMode(event.target.value))} disabled={busy}>
                 <option value="OFF">Off</option>
                 <option value="PUSH_TO_TALK">Push to talk</option>
                 <option value="ALWAYS_LISTENING">Always listening</option>
               </select>
             </div>
-            <form className="control-card" onSubmit={(event) => {
-              event.preventDefault();
-              void runAction(() => api.setWakePhrase(wakePhrase));
-            }}>
+            <form className="control-card" onSubmit={(event) => { event.preventDefault(); void runAction(() => api.setWakePhrase(wakePhrase)); }}>
               <label>Wake phrase</label>
               <input value={wakePhrase} onChange={(event) => setWakePhrase(event.target.value)} disabled={busy} />
               <button type="submit" disabled={busy}>Update</button>
@@ -409,23 +301,11 @@ export default function App() {
         <PlaceholderPage title="Desktop" description="Launch approved PC controls from the touchscreen command grid." icon={<MonitorCog size={20} />}>
           <div className="desktop-approval-bar">
             <label htmlFor="desktop-approval">Approval ID for MEDIUM controls</label>
-            <input
-              id="desktop-approval"
-              value={desktopApprovalId}
-              onChange={(event) => setDesktopApprovalId(event.target.value)}
-              placeholder="Paste approved record ID"
-              disabled={busy}
-            />
+            <input id="desktop-approval" value={desktopApprovalId} onChange={(event) => setDesktopApprovalId(event.target.value)} placeholder="Paste approved record ID" disabled={busy} />
           </div>
           <div className="desktop-grid">
             {desktopProfiles.map((profile) => (
-              <button
-                type="button"
-                className={`desktop-command ${profile.risk_level.toLowerCase()}`}
-                key={profile.id}
-                onClick={() => executeDesktop(profile)}
-                disabled={busy || (profile.risk_level === "MEDIUM" && !desktopApprovalId.trim())}
-              >
+              <button type="button" className={`desktop-command ${profile.risk_level.toLowerCase()}`} key={profile.id} onClick={() => executeDesktop(profile)} disabled={busy || (profile.risk_level === "MEDIUM" && !desktopApprovalId.trim())}>
                 <MonitorCog size={28} />
                 <strong>{profile.name}</strong>
                 <span>{profile.type}</span>
@@ -433,12 +313,7 @@ export default function App() {
               </button>
             ))}
           </div>
-          {desktopResult && (
-            <div className={`desktop-result ${desktopResult.success ? "success" : "failure"}`}>
-              <strong>{desktopResult.profile_name}</strong>
-              <span>{desktopResult.output}</span>
-            </div>
-          )}
+          {desktopResult && <div className={`desktop-result ${desktopResult.success ? "success" : "failure"}`}><strong>{desktopResult.profile_name}</strong><span>{desktopResult.output}</span></div>}
         </PlaceholderPage>
       );
     }
@@ -446,28 +321,6 @@ export default function App() {
     if (activePage === "logs") {
       return (
         <PlaceholderPage title="Logs" description="Audit and execution events." icon={<FileText size={20} />}>
-          <div className="telemetry-grid compact">
-            <article className="panel telemetry-card">
-              <Activity size={20} />
-              <span>Successes</span>
-              <strong>{modelMetrics?.success_total ?? 0}</strong>
-            </article>
-            <article className="panel telemetry-card">
-              <Activity size={20} />
-              <span>Failures</span>
-              <strong>{modelMetrics?.failure_total ?? 0}</strong>
-            </article>
-            <article className="panel telemetry-card">
-              <Activity size={20} />
-              <span>Fallbacks</span>
-              <strong>{modelMetrics?.fallback_total ?? 0}</strong>
-            </article>
-            <article className="panel telemetry-card">
-              <Activity size={20} />
-              <span>Avg latency</span>
-              <strong>{modelMetrics?.average_latency_ms ?? 0} ms</strong>
-            </article>
-          </div>
           <DataList items={auditEvents} emptyText="No audit events yet." />
         </PlaceholderPage>
       );
@@ -490,7 +343,6 @@ export default function App() {
   return (
     <div className="app-layout">
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
-
       <main className="hud-shell">
         <header className="topbar">
           <div>
@@ -502,7 +354,6 @@ export default function App() {
             <span>{health?.status ?? "connecting"}</span>
           </div>
         </header>
-
         {error && <div className="error-banner">{error}</div>}
         {renderPage()}
       </main>
