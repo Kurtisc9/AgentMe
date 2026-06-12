@@ -7,6 +7,13 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      SAGE_ENVIRONMENT: production
+      SAGE_API_HOST: 0.0.0.0
+      SAGE_POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/agentme
+      SAGE_QDRANT_URL: http://qdrant:6333
+      SAGE_OLLAMA_BASE_URL: http://host.docker.internal:11434
+      SAGE_LM_STUDIO_BASE_URL: http://host.docker.internal:1234/v1
     ports:
       - "8000:8000"
     volumes:
@@ -14,6 +21,15 @@ services:
       - ./logs:/app/logs
       - ./data:/app/data
       - ./voices:/app/voices
+      - ./migrations:/app/migrations:ro
+      - ./scripts:/app/scripts:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,7 +45,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   postgres:
     image: postgres:16-alpine
@@ -38,7 +55,7 @@ services:
     environment:
       POSTGRES_DB: agentme
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -65,6 +82,7 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: http
       GENERIC_TIMEZONE: America/New_York
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
     volumes:
       - n8n_data:/home/node/.n8n
 
