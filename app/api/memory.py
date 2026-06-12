@@ -3,7 +3,14 @@ from dataclasses import asdict
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.config import get_settings
-from app.schemas.memory import MemoryCreate, MemoryListResponse, MemoryResponse, MemoryUpdate
+from app.schemas.memory import (
+    MemoryCreate,
+    MemoryDecayResponse,
+    MemoryListResponse,
+    MemoryProjectSummaryResponse,
+    MemoryResponse,
+    MemoryUpdate,
+)
 from app.services.embedding_factory import build_embedding_provider
 from app.services.embedding_service import EmbeddingService
 from app.services.memory_manager import MemoryManager
@@ -32,14 +39,18 @@ semantic_service = SemanticMemoryService(
 @router.post("", response_model=MemoryResponse, status_code=status.HTTP_201_CREATED)
 def create_memory(payload: MemoryCreate) -> MemoryResponse:
     try:
-        record, provider = manager.create(
+        record = service.create(
             memory_type=payload.memory_type,
             content=payload.content,
             tags=payload.tags,
+            project=payload.project,
+            importance=payload.importance,
         )
+        provider = "local"
         try:
             semantic_service.initialize()
             semantic_service.upsert(record)
+            provider = settings.embedding_provider
         except Exception:
             pass
     except ValueError as exc:
@@ -49,13 +60,26 @@ def create_memory(payload: MemoryCreate) -> MemoryResponse:
 
 
 @router.get("", response_model=MemoryListResponse)
-def list_memories() -> MemoryListResponse:
-    return MemoryListResponse(memories=service.list_all())
+def list_memories(project: str | None = Query(default=None, max_length=120)) -> MemoryListResponse:
+    return MemoryListResponse(memories=service.list_all(project=project))
 
 
 @router.get("/search", response_model=MemoryListResponse)
-def search_memories(query: str = Query(min_length=1, max_length=200)) -> MemoryListResponse:
-    return MemoryListResponse(memories=service.search(query))
+def search_memories(
+    query: str = Query(min_length=1, max_length=200),
+    project: str | None = Query(default=None, max_length=120),
+) -> MemoryListResponse:
+    return MemoryListResponse(memories=service.search(query, project=project))
+
+
+@router.get("/project/{project}", response_model=MemoryProjectSummaryResponse)
+def summarize_project_memory(project: str) -> MemoryProjectSummaryResponse:
+    return MemoryProjectSummaryResponse(**service.summarize_project(project))
+
+
+@router.post("/decay", response_model=MemoryDecayResponse)
+def decay_memories() -> MemoryDecayResponse:
+    return MemoryDecayResponse(changed=service.decay_low_value_memories())
 
 
 @router.get("/semantic-search", response_model=MemoryListResponse)
@@ -92,6 +116,8 @@ def update_memory(memory_id: str, payload: MemoryUpdate) -> MemoryResponse:
             memory_id=memory_id,
             content=payload.content,
             tags=payload.tags,
+            project=payload.project,
+            importance=payload.importance,
         )
     except KeyError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
