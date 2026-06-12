@@ -12,11 +12,17 @@ from app.api.tasks import router as tasks_router
 from app.api.telemetry import router as telemetry_router
 from app.api.voice import router as voice_router
 from app.config import get_settings
+from app.middleware.auth import ApiKeyAuthMiddleware
+from app.middleware.error_logging import StructuredExceptionMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
+app.add_middleware(StructuredExceptionMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(ApiKeyAuthMiddleware)
 app.include_router(health_router)
 app.include_router(tasks_router)
 app.include_router(approvals_router)
