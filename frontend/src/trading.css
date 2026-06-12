@@ -1,0 +1,142 @@
+.trading-dashboard-alpha {
+  display: grid;
+  gap: 18px;
+}
+
+.trading-hero {
+  min-height: 230px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 26px;
+}
+
+.trading-hero h2 {
+  max-width: 820px;
+  margin-bottom: 12px;
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  letter-spacing: 0.04em;
+}
+
+.trading-hero p {
+  max-width: 760px;
+  color: #94afc0;
+  line-height: 1.65;
+}
+
+.trading-rule-card {
+  min-width: 220px;
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(53, 245, 154, 0.25);
+  border-radius: 18px;
+  color: #baffd7;
+  background: linear-gradient(180deg, rgba(17, 84, 54, 0.26), rgba(2, 11, 20, 0.72));
+}
+
+.trading-rule-card span {
+  color: #96bea9;
+}
+
+.trading-grid-main,
+.trading-grid-secondary {
+  display: grid;
+  gap: 14px;
+}
+
+.trading-grid-main {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trading-grid-secondary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.trading-panel {
+  min-height: 230px;
+  padding: 20px;
+}
+
+.watchlist-grid,
+.technical-alert-grid,
+.whale-list,
+.journal-prompt-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.watchlist-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.watchlist-grid article,
+.technical-alert-grid article,
+.whale-list div,
+.journal-prompt-list span,
+.coach-card,
+.paper-trade-card {
+  border: 1px solid rgba(91, 215, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(2, 11, 20, 0.56);
+}
+
+.watchlist-grid article,
+.coach-card,
+.paper-trade-card {
+  display: grid;
+  gap: 7px;
+  padding: 13px;
+}
+
+.watchlist-grid strong,
+.coach-card strong,
+.paper-trade-card strong {
+  color: #dcf9ff;
+}
+
+.watchlist-grid span,
+.watchlist-grid small,
+.coach-card p,
+.paper-trade-card span {
+  color: #8fa9ba;
+}
+
+.technical-alert-grid article,
+.whale-list div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.technical-alert-grid span,
+.whale-list span,
+.journal-prompt-list span {
+  color: #adc5d3;
+}
+
+.journal-prompt-list span {
+  padding: 12px;
+}
+
+@media (max-width: 1280px) {
+  .trading-grid-secondary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .trading-hero,
+  .trading-grid-main,
+  .trading-grid-secondary,
+  .watchlist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trading-hero {
+    display: grid;
+  }
+}
