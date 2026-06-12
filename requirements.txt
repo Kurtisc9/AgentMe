@@ -3,6 +3,8 @@ uvicorn[standard]
 pydantic-settings
 python-dotenv
 httpx
+python-multipart
+faster-whisper
 pytest
 pytest-cov
 psycopg[binary]
