@@ -1,21 +1,10 @@
-import { FormEvent, useEffect, useState } from "react";
-import {
-  Activity,
-  Bot,
-  Brain,
-  ClipboardList,
-  FileText,
-  Mic2,
-  MonitorCog,
-  Settings,
-  ShieldCheck,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Activity, Bot, Brain, ClipboardList, FileText, Mic2, MonitorCog, Settings, ShieldCheck } from "lucide-react";
 
 import {
   api,
   type AgentSummary,
   type ApprovalRecord,
-  type DesktopExecution,
   type DesktopProfile,
   type HealthStatus,
   type MemoryRecord,
@@ -29,16 +18,11 @@ import {
 import { Sidebar, type HudPage } from "./components/Sidebar";
 import { MissionDashboard } from "./pages/MissionDashboard";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { TradingDashboard } from "./pages/TradingDashboard";
 
 function DataList({ items, emptyText }: { items: unknown[]; emptyText: string }) {
   if (items.length === 0) return <div className="empty-state">{emptyText}</div>;
-  return (
-    <div className="data-list">
-      {items.slice(0, 20).map((item, index) => (
-        <pre key={index}>{JSON.stringify(item, null, 2)}</pre>
-      ))}
-    </div>
-  );
+  return <div className="data-list">{items.slice(0, 12).map((item, index) => <pre key={index}>{JSON.stringify(item, null, 2)}</pre>)}</div>;
 }
 
 export default function App() {
@@ -56,13 +40,6 @@ export default function App() {
   const [missionSummary, setMissionSummary] = useState<MissionSummary | null>(null);
   const [modelMetrics, setModelMetrics] = useState<ModelMetricsSummary | null>(null);
   const [desktopProfiles, setDesktopProfiles] = useState<DesktopProfile[]>([]);
-  const [desktopResult, setDesktopResult] = useState<DesktopExecution | null>(null);
-  const [desktopApprovalId, setDesktopApprovalId] = useState("");
-  const [taskInput, setTaskInput] = useState("");
-  const [memoryInput, setMemoryInput] = useState("");
-  const [memoryType, setMemoryType] = useState("NOTE");
-  const [wakePhrase, setWakePhrase] = useState("Sage");
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = async () => {
@@ -103,7 +80,6 @@ export default function App() {
     setApprovals(approvalData.approvals);
     setMemories(memoryData.memories);
     setVoiceState(currentVoiceState);
-    setWakePhrase(currentVoiceState.wake_phrase);
     setVoiceHistory(historyData.events);
     setAuditEvents(auditData.events);
     setSystemTelemetry(telemetryData);
@@ -119,49 +95,6 @@ export default function App() {
     const interval = window.setInterval(() => void refresh().catch(() => undefined), 5000);
     return () => window.clearInterval(interval);
   }, []);
-
-  const runAction = async (action: () => Promise<unknown>) => {
-    setBusy(true);
-    setError(null);
-    try {
-      await action();
-      await refresh();
-    } catch (caught: unknown) {
-      setError(caught instanceof Error ? caught.message : "Action failed.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const submitTask = (event: FormEvent) => {
-    event.preventDefault();
-    const description = taskInput.trim();
-    if (!description) return;
-    void runAction(async () => {
-      await api.createTask(description);
-      setTaskInput("");
-    });
-  };
-
-  const submitMemory = (event: FormEvent) => {
-    event.preventDefault();
-    const content = memoryInput.trim();
-    if (!content) return;
-    void runAction(async () => {
-      await api.createMemory({ memory_type: memoryType, content, tags: [] });
-      setMemoryInput("");
-    });
-  };
-
-  const executeDesktop = (profile: DesktopProfile) => {
-    void runAction(async () => {
-      const result = await api.executeDesktopProfile(
-        profile.id,
-        profile.risk_level === "MEDIUM" ? desktopApprovalId.trim() : undefined,
-      );
-      setDesktopResult(result);
-    });
-  };
 
   const renderPage = () => {
     if (activePage === "dashboard") {
@@ -181,149 +114,16 @@ export default function App() {
       );
     }
 
-    if (activePage === "inbox") {
-      return (
-        <PlaceholderPage title="Inbox" description="Submit and inspect routed tasks." icon={<ClipboardList size={20} />}>
-          <form className="control-form" onSubmit={submitTask}>
-            <input value={taskInput} onChange={(event) => setTaskInput(event.target.value)} placeholder="Enter a task for Sage" disabled={busy} />
-            <button type="submit" disabled={busy}>Route task</button>
-          </form>
-          <DataList items={tasks} emptyText="No routed tasks yet." />
-        </PlaceholderPage>
-      );
-    }
+    if (activePage === "trading") return <TradingDashboard />;
+    if (activePage === "inbox") return <PlaceholderPage title="Inbox" description="Routed tasks." icon={<ClipboardList size={20} />}><DataList items={tasks} emptyText="No routed tasks yet." /></PlaceholderPage>;
+    if (activePage === "approvals") return <PlaceholderPage title="Approvals" description="Review pending approval records." icon={<ShieldCheck size={20} />}><DataList items={approvals} emptyText="No approvals." /></PlaceholderPage>;
+    if (activePage === "agents") return <PlaceholderPage title="Agents" description="Specialist agent roster." icon={<Bot size={20} />}><DataList items={agents} emptyText="No agents loaded." /></PlaceholderPage>;
+    if (activePage === "memory") return <PlaceholderPage title="Memory" description="Structured memories and recalls." icon={<Brain size={20} />}><DataList items={memories} emptyText="No memories stored." /></PlaceholderPage>;
+    if (activePage === "voice") return <PlaceholderPage title="Voice" description="Voice state and history." icon={<Mic2 size={20} />}><DataList items={[voiceState ?? {}, ...voiceHistory]} emptyText="No voice history yet." /></PlaceholderPage>;
+    if (activePage === "desktop") return <PlaceholderPage title="Desktop" description="Desktop command profiles." icon={<MonitorCog size={20} />}><DataList items={desktopProfiles} emptyText="No desktop profiles." /></PlaceholderPage>;
+    if (activePage === "logs") return <PlaceholderPage title="Logs" description="Audit and execution events." icon={<FileText size={20} />}><DataList items={auditEvents} emptyText="No audit events yet." /></PlaceholderPage>;
 
-    if (activePage === "approvals") {
-      return (
-        <PlaceholderPage title="Approvals" description="MEDIUM-risk actions waiting for KurtisC." icon={<ShieldCheck size={20} />}>
-          {approvals.length === 0 ? <div className="empty-state">No approvals.</div> : (
-            <div className="approval-list">
-              {approvals.map((approval, index) => {
-                const approvalId = String(approval.approval_id ?? "");
-                const pending = approval.status === "PENDING";
-                return (
-                  <article className="approval-card" key={approvalId || index}>
-                    <pre>{JSON.stringify(approval, null, 2)}</pre>
-                    {pending && approvalId && (
-                      <div className="action-row">
-                        <button onClick={() => void runAction(() => api.approve(approvalId))} disabled={busy}>Approve</button>
-                        <button className="danger" onClick={() => void runAction(() => api.deny(approvalId))} disabled={busy}>Deny</button>
-                      </div>
-                    )}
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </PlaceholderPage>
-      );
-    }
-
-    if (activePage === "agents") {
-      return (
-        <PlaceholderPage title="Agents" description="Specialist agent roster and capabilities." icon={<Bot size={20} />}>
-          <div className="agent-grid">
-            {agents.map((agent) => (
-              <article className="agent-card" key={agent.name}>
-                <div className="agent-icon">{agent.name.slice(0, 2).toUpperCase()}</div>
-                <h3>{agent.name}</h3>
-                <p>{agent.description}</p>
-                <div className="tag-row">{agent.capabilities.map((capability) => <span key={capability}>{capability}</span>)}</div>
-              </article>
-            ))}
-          </div>
-        </PlaceholderPage>
-      );
-    }
-
-    if (activePage === "memory") {
-      return (
-        <PlaceholderPage title="Memory" description="Create and remove structured memories." icon={<Brain size={20} />}>
-          <form className="control-form" onSubmit={submitMemory}>
-            <select value={memoryType} onChange={(event) => setMemoryType(event.target.value)} disabled={busy}>
-              <option value="NOTE">Note</option>
-              <option value="PREFERENCE">Preference</option>
-              <option value="PROJECT">Project</option>
-              <option value="DECISION">Decision</option>
-            </select>
-            <input value={memoryInput} onChange={(event) => setMemoryInput(event.target.value)} placeholder="Store a memory" disabled={busy} />
-            <button type="submit" disabled={busy}>Save memory</button>
-          </form>
-          <div className="memory-list">
-            {memories.length === 0 ? <div className="empty-state">No memories stored.</div> : memories.map((memory, index) => {
-              const memoryId = String(memory.memory_id ?? "");
-              return (
-                <article className="memory-card" key={memoryId || index}>
-                  <div><strong>{String(memory.memory_type ?? "MEMORY")}</strong><p>{String(memory.summary ?? memory.content ?? "")}</p></div>
-                  {memoryId && <button className="danger" onClick={() => void runAction(() => api.deleteMemory(memoryId))} disabled={busy}>Delete</button>}
-                </article>
-              );
-            })}
-          </div>
-        </PlaceholderPage>
-      );
-    }
-
-    if (activePage === "voice") {
-      return (
-        <PlaceholderPage title="Voice" description="Voice state, wake phrase, and history." icon={<Mic2 size={20} />}>
-          <div className="voice-grid">
-            <div className="control-card">
-              <label>Voice mode</label>
-              <select value={voiceState?.mode ?? "OFF"} onChange={(event) => void runAction(() => api.setVoiceMode(event.target.value))} disabled={busy}>
-                <option value="OFF">Off</option>
-                <option value="PUSH_TO_TALK">Push to talk</option>
-                <option value="ALWAYS_LISTENING">Always listening</option>
-              </select>
-            </div>
-            <form className="control-card" onSubmit={(event) => { event.preventDefault(); void runAction(() => api.setWakePhrase(wakePhrase)); }}>
-              <label>Wake phrase</label>
-              <input value={wakePhrase} onChange={(event) => setWakePhrase(event.target.value)} disabled={busy} />
-              <button type="submit" disabled={busy}>Update</button>
-            </form>
-          </div>
-          <DataList items={voiceHistory} emptyText="No voice history yet." />
-        </PlaceholderPage>
-      );
-    }
-
-    if (activePage === "desktop") {
-      return (
-        <PlaceholderPage title="Desktop" description="Launch approved PC controls from the touchscreen command grid." icon={<MonitorCog size={20} />}>
-          <div className="desktop-approval-bar">
-            <label htmlFor="desktop-approval">Approval ID for MEDIUM controls</label>
-            <input id="desktop-approval" value={desktopApprovalId} onChange={(event) => setDesktopApprovalId(event.target.value)} placeholder="Paste approved record ID" disabled={busy} />
-          </div>
-          <div className="desktop-grid">
-            {desktopProfiles.map((profile) => (
-              <button type="button" className={`desktop-command ${profile.risk_level.toLowerCase()}`} key={profile.id} onClick={() => executeDesktop(profile)} disabled={busy || (profile.risk_level === "MEDIUM" && !desktopApprovalId.trim())}>
-                <MonitorCog size={28} /><strong>{profile.name}</strong><span>{profile.type}</span><small>{profile.risk_level}</small>
-              </button>
-            ))}
-          </div>
-          {desktopResult && <div className={`desktop-result ${desktopResult.success ? "success" : "failure"}`}><strong>{desktopResult.profile_name}</strong><span>{desktopResult.output}</span></div>}
-        </PlaceholderPage>
-      );
-    }
-
-    if (activePage === "logs") {
-      return (
-        <PlaceholderPage title="Logs" description="Audit and execution events." icon={<FileText size={20} />}>
-          <DataList items={auditEvents} emptyText="No audit events yet." />
-        </PlaceholderPage>
-      );
-    }
-
-    return (
-      <PlaceholderPage title="Settings" description="Provider, model, voice, and safety configuration." icon={<Settings size={20} />}>
-        <div className="settings-grid">
-          <div className="control-card"><strong>Embedding provider</strong><span>{providers?.embedding_provider ?? "unknown"}</span></div>
-          <div className="control-card"><strong>Safety owner</strong><span>KurtisC</span></div>
-          <div className="control-card"><strong>API status</strong><span>{health?.status ?? "unknown"}</span></div>
-          <div className="control-card"><strong>GPU</strong><span>{systemTelemetry?.gpu_name ?? "not detected"}</span></div>
-        </div>
-      </PlaceholderPage>
-    );
+    return <PlaceholderPage title="Settings" description="Provider, model, voice, and safety configuration." icon={<Settings size={20} />}><div className="settings-grid"><div className="control-card"><strong>Embedding provider</strong><span>{providers?.embedding_provider ?? "unknown"}</span></div><div className="control-card"><strong>Safety owner</strong><span>KurtisC</span></div><div className="control-card"><strong>API status</strong><span>{health?.status ?? "unknown"}</span></div><div className="control-card"><strong>GPU</strong><span>{systemTelemetry?.gpu_name ?? "not detected"}</span></div></div></PlaceholderPage>;
   };
 
   return (
