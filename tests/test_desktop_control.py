@@ -81,6 +81,19 @@ def test_profiles_can_filter_by_device(tmp_path: Path) -> None:
     assert pc2_profiles[0]["id"] == "high_action"
 
 
+def test_default_profiles_include_pc2_pack() -> None:
+    profiles = DesktopProfileService().list_profiles(device="PC2")
+    profile_ids = {profile.id for profile in profiles}
+
+    assert {
+        "pc2_stream_tools",
+        "pc2_obs_monitor",
+        "pc2_touch_panel",
+        "pc2_sound_settings",
+        "pc2_restart_touch_panel",
+    } <= profile_ids
+
+
 def test_profile_editor_upserts_and_deletes(tmp_path: Path) -> None:
     _, _, profiles = build_service(tmp_path)
     profile = DesktopProfile(

@@ -13,9 +13,10 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY config ./config
 COPY Inbox ./Inbox
 COPY logs ./logs
-COPY voices ./voices
+RUN mkdir -p voices
 
 EXPOSE 8000
 

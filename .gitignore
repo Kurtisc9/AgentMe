@@ -28,6 +28,7 @@ Inbox/*.md
 !Inbox/.gitkeep
 
 # Databases / local storage
+data/
 *.db
 *.sqlite3
 qdrant_storage/
