@@ -34,6 +34,7 @@ class AutomationService:
     ) -> IntegrationResult:
         description = f"Run {integration_name} action {action}"
         routed = self.commander.route_task(description)
+        approval_required = routed.approval_required or action.lower() in {"run", "execute"}
         approval_verified = False
 
         if routed.risk_level == RiskLevel.HIGH or routed.blocked:
@@ -43,7 +44,7 @@ class AutomationService:
                 success=False,
                 output="Automation blocked by Sage safety policy.",
             )
-        elif routed.approval_required:
+        elif approval_required:
             if not approval_id:
                 result = IntegrationResult(
                     integration_name=integration_name,

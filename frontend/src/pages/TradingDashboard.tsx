@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import {
   AlertTriangle,
   BarChart3,
@@ -20,7 +20,7 @@ function TradingPanel({
   children,
 }: {
   title: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   children: ReactNode;
 }) {
   return (

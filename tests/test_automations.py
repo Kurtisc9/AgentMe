@@ -46,6 +46,19 @@ def test_unapproved_automation_is_rejected(tmp_path: Path) -> None:
     assert "verified KurtisC approval" in result.output
 
 
+def test_execute_action_requires_verified_approval(tmp_path: Path) -> None:
+    service, _ = build_service(tmp_path)
+
+    result = service.execute(
+        integration_name="fake",
+        action="execute",
+        payload={},
+    )
+
+    assert result.success is False
+    assert "verified KurtisC approval" in result.output
+
+
 def test_matching_approved_record_allows_execution(tmp_path: Path) -> None:
     service, approvals = build_service(tmp_path)
     created = approvals.create(

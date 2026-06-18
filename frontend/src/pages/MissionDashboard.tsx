@@ -1,6 +1,6 @@
 import "./MissionDashboard.css";
 
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -40,7 +40,7 @@ function statusLabel(value: boolean | undefined) {
   return value ? "ONLINE" : "OFFLINE";
 }
 
-function MiniMetric({ label, value, icon }: { label: string; value: string; icon: JSX.Element }) {
+function MiniMetric({ label, value, icon }: { label: string; value: string; icon: ReactElement }) {
   return (
     <article className="mission-mini-metric">
       {icon}
@@ -56,7 +56,7 @@ function MissionPanel({
   children,
 }: {
   title: string;
-  icon: JSX.Element;
+  icon: ReactElement;
   children: ReactNode;
 }) {
   return (

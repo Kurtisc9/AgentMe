@@ -23,7 +23,7 @@ class MissionControlService:
         self.voice_history = voice_history or VoiceHistoryService()
 
     def summary(self) -> dict[str, object]:
-        task_records = self.tasks.list_all()
+        task_records = self.tasks.list_tasks()
         approval_records = self.approvals.list_all()
         memory_records = self.memories.list_all()
         voice_events = self.voice_history.list_all()
