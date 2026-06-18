@@ -6,10 +6,39 @@ Do not build new features during this phase.
 
 ## Prerequisites
 
-Run PowerShell from the AgentMe repo root on the target machine.
+Run PowerShell on the target machine. If the repo is not already cloned, clone it from GitHub first:
 
 ```powershell
+cd C:\Users\kurti
+git clone https://github.com/Kurtisc9/AgentMe.git
+cd AgentMe
+git checkout phase-4-1-validation
 git pull
+```
+
+If the repo already exists, enter it directly:
+
+```powershell
+cd C:\Users\kurti\AgentMe
+git checkout phase-4-1-validation
+git pull
+```
+
+Confirm you are in the repo root:
+
+```powershell
+Get-Location
+Test-Path docker-compose.prod.yml
+```
+
+Expected result:
+
+```text
+Path ends with \AgentMe
+True
+```
+
+```powershell
 docker compose -f docker-compose.prod.yml up -d --build
 docker exec agentme-backend python scripts/migrate.py
 ```

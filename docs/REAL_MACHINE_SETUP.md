@@ -4,10 +4,41 @@ This document is for PC1 and PC2 production bring-up. It does not add features; 
 
 ## Baseline On Each PC
 
-Run PowerShell from the repo root.
+Run PowerShell on the target PC. If the repo is not already cloned, clone it from GitHub first:
 
 ```powershell
+cd C:\Users\kurti
+git clone https://github.com/Kurtisc9/AgentMe.git
+cd AgentMe
+git checkout phase-4-1-validation
 git pull
+```
+
+If the repo already exists, enter it directly:
+
+```powershell
+cd C:\Users\kurti\AgentMe
+git checkout phase-4-1-validation
+git pull
+```
+
+Confirm you are in the repo root:
+
+```powershell
+Get-Location
+Test-Path docker-compose.prod.yml
+```
+
+Expected result:
+
+```text
+Path ends with \AgentMe
+True
+```
+
+Then configure the environment:
+
+```powershell
 Copy-Item .env.example .env
 notepad .env
 ```
