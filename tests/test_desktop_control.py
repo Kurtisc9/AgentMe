@@ -87,7 +87,6 @@ def test_default_profiles_include_pc2_pack() -> None:
 
     assert {
         "pc2_stream_tools",
-        "pc2_obs_monitor",
         "pc2_touch_panel",
         "pc2_sound_settings",
         "pc2_restart_touch_panel",

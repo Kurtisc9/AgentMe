@@ -1,10 +1,8 @@
 {
   "machine": "PC1",
   "profiles": [
-    {"id":"pc1_obs","name":"PC1 OBS Studio","type":"application","risk_level":"LOW","command":"C:/Program Files/obs-studio/bin/64bit/obs64.exe","arguments":[]},
     {"id":"pc1_wallpaper_engine","name":"PC1 Wallpaper Engine","type":"application","risk_level":"LOW","command":"C:/Program Files (x86)/Steam/steamapps/common/wallpaper_engine/wallpaper64.exe","arguments":[]},
     {"id":"pc1_agentme_repo","name":"PC1 AgentMe Repo","type":"folder","risk_level":"LOW","command":"C:/Sage-AI-Agent","arguments":[]},
-    {"id":"pc1_display_settings","name":"PC1 Display Settings","type":"uri","risk_level":"LOW","command":"ms-settings:display","arguments":[]},
-    {"id":"pc1_restart_obs","name":"PC1 Restart OBS","type":"powershell","risk_level":"MEDIUM","command":"Get-Process obs64 -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Process 'C:/Program Files/obs-studio/bin/64bit/obs64.exe'","arguments":[]}
+    {"id":"pc1_display_settings","name":"PC1 Display Settings","type":"uri","risk_level":"LOW","command":"ms-settings:display","arguments":[]}
   ]
 }

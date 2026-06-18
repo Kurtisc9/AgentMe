@@ -39,6 +39,10 @@ $Headers = @{ "X-API-Key" = $ApiKey }
 
 ## OBS WebSocket / Bridge Port 4456
 
+Status: **DISABLED / SKIPPED FOR NOW**
+
+OBS setup is documented for later re-enable, but it is not required for the current validation pass.
+
 Sage OBS desktop profiles call a local OBS control bridge at:
 
 ```text
@@ -183,6 +187,10 @@ Pass criteria:
 
 ## NVIDIA `nvidia-smi`
 
+Status: **DISABLED / SKIPPED FOR NOW**
+
+NVIDIA telemetry is documented for later re-enable, but it is not required for the current validation pass. Sage telemetry tolerates missing `nvidia-smi` by returning empty GPU fields.
+
 Validate GPU tooling on each machine:
 
 ```powershell
@@ -253,8 +261,6 @@ Invoke-RestMethod http://127.0.0.1:8000/desktop/profiles?device=PC1 -Headers $He
 Invoke-RestMethod http://127.0.0.1:8000/providers/health -Headers $Headers
 ollama list
 Invoke-RestMethod http://127.0.0.1:1234/v1/models
-nvidia-smi
-Test-NetConnection 127.0.0.1 -Port 4456
 ```
 
 Pass criteria:
@@ -266,12 +272,12 @@ Pass criteria:
 - `/ready` returns `ready: true`.
 - Mission Control returns HTTP 200 and loads in the browser.
 - PC1 desktop profiles load.
-- OBS bridge port `4456` is reachable.
+- OBS bridge port `4456` is skipped for now.
 - Wallpaper Engine profile executes.
 - Voice route for `Sage open display settings` matches `pc1_display_settings`.
-- Voice route for `Sage start recording` matches `pc1_obs_start_recording`.
+- OBS voice routes are skipped for now.
 - Ollama and LM Studio are true in `/providers/health`.
-- `nvidia-smi` succeeds.
+- NVIDIA telemetry is skipped for now.
 
 ## PC2 Validation Checklist
 
@@ -287,8 +293,6 @@ Invoke-RestMethod http://127.0.0.1:8000/desktop/profiles?device=PC2 -Headers $He
 Invoke-RestMethod http://127.0.0.1:8000/providers/health -Headers $Headers
 ollama list
 Invoke-RestMethod http://127.0.0.1:1234/v1/models
-nvidia-smi
-Test-NetConnection 127.0.0.1 -Port 4456
 ```
 
 Pass criteria:
@@ -299,12 +303,12 @@ Pass criteria:
 - `/health` returns healthy.
 - `/ready` returns `ready: true`.
 - Mission Control returns HTTP 200 and loads in the browser.
-- PC2 desktop profiles load, including `pc2_touch_panel`, `pc2_sound_settings`, and `pc2_obs_monitor`.
+- PC2 desktop profiles load, including `pc2_touch_panel` and `pc2_sound_settings`.
 - Voice route for `Sage PC2 touch panel browser` matches `pc2_touch_panel`.
 - Voice route for `Sage PC2 sound settings` matches `pc2_sound_settings`.
-- Voice route for `Sage PC2 OBS monitor` matches `pc2_obs_monitor`.
+- OBS voice routes are skipped for now.
 - Ollama and LM Studio are true in `/providers/health`.
-- `nvidia-smi` succeeds.
+- NVIDIA telemetry is skipped for now.
 
 ## Final Lock Criteria
 
@@ -316,8 +320,8 @@ The real-machine phase can lock only when both PC1 and PC2 have:
 - backend health and readiness passing
 - frontend production build verified
 - desktop profile editor verified
-- OBS bridge reachable on port `4456`
+- OBS bridge skipped for now
 - Wallpaper Engine path verified where configured
 - voice command mapper matching and executing machine profiles
 - Ollama and/or LM Studio available as intended
-- GPU tooling visible with `nvidia-smi`
+- NVIDIA telemetry skipped for now

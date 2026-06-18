@@ -41,7 +41,13 @@ Expected results:
 
 ## 1. OBS WebSocket
 
+Status: **DISABLED / SKIPPED FOR NOW**
+
+OBS validation is intentionally disabled for the current PC1/PC2 pass. Do not block Phase 4.1 on OBS until the bridge is installed and the active desktop profiles are re-enabled.
+
 ### Validation Steps
+
+Skip these steps for now:
 
 1. Start OBS Studio.
 2. Start or enable the OBS control bridge/WebSocket listener.
@@ -64,6 +70,13 @@ Invoke-RestMethod http://127.0.0.1:8000/voice-desktop/route `
 
 ### Expected Results
 
+Current expected result while disabled:
+
+- OBS checks are marked `SKIPPED`.
+- Missing port `4456` is not a blocker.
+
+Expected result after OBS is re-enabled:
+
 - `TcpTestSucceeded` is `True`.
 - Voice route response has `matched: true`.
 - `profile_id` is `pc1_obs_start_recording`.
@@ -79,6 +92,8 @@ Invoke-RestMethod http://127.0.0.1:8000/voice-desktop/route `
 - OBS does not start recording.
 
 ### Recovery Steps
+
+When OBS is re-enabled:
 
 1. Confirm OBS is running.
 2. Confirm the bridge/WebSocket service is installed and started.
@@ -263,7 +278,13 @@ docker compose -f docker-compose.prod.yml restart backend
 
 ## 5. NVIDIA Telemetry
 
+Status: **DISABLED / SKIPPED FOR NOW**
+
+NVIDIA validation is intentionally disabled for the current PC1/PC2 pass. Sage telemetry already tolerates missing `nvidia-smi` by returning empty GPU fields, so missing NVIDIA telemetry is not a blocker right now.
+
 ### Validation Steps
+
+Skip these steps for now:
 
 1. Confirm NVIDIA driver installation.
 2. Confirm `nvidia-smi` works from PowerShell.
@@ -283,6 +304,14 @@ Invoke-RestMethod http://127.0.0.1:8000/telemetry/system -Headers $Headers
 
 ### Expected Results
 
+Current expected result while disabled:
+
+- NVIDIA checks are marked `SKIPPED`.
+- Missing `nvidia-smi` is not a blocker.
+- Sage telemetry may return null GPU fields.
+
+Expected result after NVIDIA telemetry is re-enabled:
+
 - `nvidia-smi` exits successfully.
 - Output shows GPU name.
 - Output shows driver version.
@@ -297,6 +326,8 @@ Invoke-RestMethod http://127.0.0.1:8000/telemetry/system -Headers $Headers
 - Telemetry endpoint fails.
 
 ### Recovery Steps
+
+When NVIDIA telemetry is re-enabled:
 
 1. Install or repair the NVIDIA driver.
 2. Reboot the PC.
@@ -314,9 +345,8 @@ docker compose -f docker-compose.prod.yml restart backend
 
 1. Confirm PC1 profiles load.
 2. Validate low-risk Windows URI execution.
-3. Validate OBS profile routing.
-4. Validate Wallpaper Engine profile execution.
-5. Validate medium-risk approval gating.
+3. Validate Wallpaper Engine profile execution.
+4. Validate medium-risk approval gating when medium-risk PC1 profiles are enabled.
 
 ### Commands
 
@@ -332,37 +362,18 @@ Invoke-RestMethod http://127.0.0.1:8000/desktop/execute `
   -Body '{"profile_id":"pc1_display_settings"}'
 ```
 
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/voice-desktop/route `
-  -Method Post `
-  -Headers $Headers `
-  -ContentType "application/json" `
-  -Body '{"text":"Sage start recording"}'
-```
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/desktop/execute `
-  -Method Post `
-  -Headers $Headers `
-  -ContentType "application/json" `
-  -Body '{"profile_id":"pc1_restart_obs"}'
-```
-
 ### Expected Results
 
-- PC1 profile list includes `pc1_display_settings`, `pc1_obs_start_recording`, and `pc1_wallpaper_pause`.
+- PC1 profile list includes `pc1_display_settings` and `pc1_wallpaper_pause`.
+- PC1 profile list does not need OBS profiles while OBS is disabled.
 - Display Settings opens.
-- OBS recording route succeeds when bridge is running.
 - Wallpaper profile succeeds when Wallpaper Engine path is valid.
-- `pc1_restart_obs` requires KurtisC approval when no approval ID is supplied.
 
 ### Failure Conditions
 
 - PC1 profile list is empty.
 - URI execution fails with missing `cmd`.
-- OBS route fails with bridge unavailable.
 - Wallpaper route fails with missing `wallpaper64.exe`.
-- Medium-risk profile runs without approval.
 
 ### Recovery Steps
 
@@ -374,7 +385,7 @@ docker compose -f docker-compose.prod.yml up -d --build backend
 
 2. Confirm `config/desktop_profiles.json` exists and includes PC1 profiles.
 3. Confirm Windows command execution works outside Docker.
-4. Fix OBS bridge and Wallpaper Engine setup using the sections above.
+4. Fix Wallpaper Engine setup using the section above.
 5. Re-run profile validation.
 
 ## 7. PC2 Profile
@@ -407,25 +418,15 @@ Invoke-RestMethod http://127.0.0.1:8000/voice-desktop/route `
   -Body '{"text":"Sage PC2 sound settings"}'
 ```
 
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/voice-desktop/route `
-  -Method Post `
-  -Headers $Headers `
-  -ContentType "application/json" `
-  -Body '{"text":"Sage PC2 OBS monitor"}'
-```
-
 ### Expected Results
 
 - PC2 profile list includes:
   - `pc2_stream_tools`
-  - `pc2_obs_monitor`
   - `pc2_touch_panel`
   - `pc2_sound_settings`
   - `pc2_restart_touch_panel`
 - Touch panel route matches `pc2_touch_panel`.
 - Sound settings route matches `pc2_sound_settings`.
-- OBS monitor route matches `pc2_obs_monitor`.
 - On PC2, applicable Windows actions execute successfully.
 
 ### Failure Conditions
@@ -434,7 +435,6 @@ Invoke-RestMethod http://127.0.0.1:8000/voice-desktop/route `
 - Voice route returns `matched: false`.
 - Voice route matches the wrong profile.
 - URI execution fails with missing `cmd`.
-- OBS monitor path does not exist.
 
 ### Recovery Steps
 
@@ -450,13 +450,7 @@ git log -2 --oneline
 docker compose -f docker-compose.prod.yml up -d --build backend
 ```
 
-3. Confirm the PC2 OBS path exists:
-
-```powershell
-Test-Path "C:\Program Files\obs-studio\bin\64bit\obs64.exe"
-```
-
-4. Re-run PC2 profile and voice route validation.
+3. Re-run PC2 profile and voice route validation.
 
 ## Final Validation Checklist
 
@@ -471,15 +465,15 @@ Record pass/fail for each item on both machines.
 | Backend `/ready` passes |  |  |
 | Desktop profiles load |  |  |
 | Desktop profile editor works |  |  |
-| OBS port `4456` reachable |  |  |
-| OBS Sage route succeeds |  |  |
+| OBS port `4456` reachable | SKIPPED | SKIPPED |
+| OBS Sage route succeeds | SKIPPED | SKIPPED |
 | Wallpaper Engine path valid |  |  |
 | Wallpaper Sage route succeeds |  |  |
 | Ollama local API works |  |  |
 | Sage provider health shows Ollama |  |  |
 | LM Studio local server works |  |  |
 | Sage provider health shows LM Studio |  |  |
-| `nvidia-smi` works |  |  |
+| `nvidia-smi` works | SKIPPED | SKIPPED |
 | Voice routes match expected profiles |  |  |
 | Windows desktop execution works |  |  |
 
